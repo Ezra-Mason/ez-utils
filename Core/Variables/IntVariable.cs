@@ -4,23 +4,19 @@ using UnityEngine;
 
 namespace ezutils.Core
 {
-    [CreateAssetMenu(menuName = "ez-utils/Runtime Variables/Int Variable")]
-    public class IntVariable : ScriptableObject
+    [CreateAssetMenu(menuName = "ez-utils/Scriptable Var/Int")]
+    public class IntVariable : ScriptableVar<int>
     {
-        [SerializeField] private int _value;
-        public int Value => _value;
+        public static IntVariable operator ++(IntVariable i)
+        {
+            i.Value++;
+            return i;
+        }
 
-        public void SetValue(int newValue)
+        public static IntVariable operator --(IntVariable i)
         {
-            _value = newValue;
-        }
-        public void Increment()
-        {
-            _value++;
-        }
-        public void Decrement()
-        {
-            _value--;
+            i.Value--;
+            return i;
         }
     }
 }

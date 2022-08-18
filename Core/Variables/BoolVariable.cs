@@ -4,18 +4,8 @@ using UnityEngine;
 
 namespace ezutils.Core
 {
-    [CreateAssetMenu(menuName = "ez-utils/Runtime Variables/Bool Variable")]
-    public class BoolVariable : ScriptableObject
+    [CreateAssetMenu(menuName = "ez-utils/Scriptable Var/Bool")]
+    public class BoolVariable : ScriptableVar<bool>
     {
-        [SerializeField] private bool _variable;
-        public bool Value
-        {
-            get => _variable;
-            set
-            {
-                _variable = value;
-            }
-        }
     }
-
 }
