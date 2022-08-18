@@ -2,17 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "ez-utils/Runtime Variables/Bool Variable")]
-public class BoolVariable : ScriptableObject
+namespace ezutils.Core
 {
-    [SerializeField] private bool _variable;
-    public bool Value
+    [CreateAssetMenu(menuName = "ez-utils/Runtime Variables/Bool Variable")]
+    public class BoolVariable : ScriptableObject
     {
-        get => _variable;
-        set
+        [SerializeField] private bool _variable;
+        public bool Value
         {
-            _variable = value;
+            get => _variable;
+            set
+            {
+                _variable = value;
+            }
         }
     }
-    
+
 }

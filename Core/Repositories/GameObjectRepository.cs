@@ -1,7 +1,10 @@
 using UnityEngine;
-
-[CreateAssetMenu(menuName = "ez-utils/Repositories/GameObject")]
-public class GameObjectRepository : ObjectRepository<GameObject>
+namespace ezutils.Core
 {
 
+    [CreateAssetMenu(menuName = "ez-utils/Repositories/GameObject")]
+    public class GameObjectRepository : ObjectRepository<GameObject>
+    {
+
+    }
 }
