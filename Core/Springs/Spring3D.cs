@@ -29,6 +29,10 @@ namespace ezutils.Core
             }
         }
         private Vector3 _value;
+        public float x { get => _value.x; set { _value.x = value; } }
+        public float y { get => _value.y; set { _value.y = value; } }
+        public float z { get => _value.z; set { _value.z = value; } }
+
         public Vector3 IdealValue
         {
             get
