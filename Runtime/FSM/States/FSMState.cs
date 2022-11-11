@@ -14,7 +14,9 @@ namespace ezutils.Runtime.FSM
 
     public abstract class FSMState : ScriptableObject
     {
+        protected FiniteStateMachine _finiteStateMachine;
         public ExecutionState ExecutionState { get; protected set; }
+        public bool HasEnteredState { get; protected set; }
 
         public virtual void OnEnable()
         {
