@@ -30,7 +30,7 @@ namespace ezutils.Runtime.BehaviourTree
             _tree = tree;
         }
 
-        public virtual void UpdateNode(float deltaTime)
+        public virtual NodeState UpdateNode(float deltaTime)
         {
             // if this is the first tick, call the start method
             if (!_started)
@@ -39,7 +39,7 @@ namespace ezutils.Runtime.BehaviourTree
                 _started = true;
             }
 
-            OnUpdateNode(deltaTime);
+            _state = OnUpdateNode(deltaTime);
 
             // if the node has started but has now exited, call the stop method
             var shouldExit = _started && 
@@ -49,13 +49,15 @@ namespace ezutils.Runtime.BehaviourTree
                 OnStop();
                 _started = false;
             }
+
+            return _state;
         }
 
         /// <summary>
         /// Called on the nodes first update
         /// </summary>
         protected abstract void OnStart();
-        protected abstract void OnUpdateNode(float deltaTime);
+        protected abstract NodeState OnUpdateNode(float deltaTime);
         /// <summary>
         /// Called on the nodes last update
         /// </summary>

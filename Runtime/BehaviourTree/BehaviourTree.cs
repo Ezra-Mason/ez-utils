@@ -13,6 +13,16 @@ namespace ezutils.Runtime.BehaviourTree
             _rootNode.UpdateNode(deltaTime);
         }
 
+        public NodeState UpdateTree(float deltaTime)
+        {
+            if (_rootNode.State == NodeState.RUNNING)
+            {
+                return _rootNode.UpdateNode(deltaTime);
+            }
+
+            return _rootNode.State;
+        }
+
         public NodeState State => _rootNode.State;
     }
 }
