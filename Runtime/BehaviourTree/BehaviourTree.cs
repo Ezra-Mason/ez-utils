@@ -8,9 +8,12 @@ namespace ezutils.Runtime.BehaviourTree
     {
         private Node _rootNode;
 
-        public void TickTree(float deltaTime)
+        public bool SetRootNode(Node node)
         {
-            _rootNode.UpdateNode(deltaTime);
+            if (_rootNode != null) return false;
+
+            _rootNode = node;
+            return true;
         }
 
         public NodeState UpdateTree(float deltaTime)
