@@ -30,6 +30,13 @@ namespace ezutils.Runtime.BehaviourTree
             _tree = tree;
         }
 
+        //this might need to be changed to a set child node 
+        public virtual void SetParent(Node node)
+        {
+            _parent = node;
+        }
+
+
         public virtual NodeState UpdateNode(float deltaTime)
         {
             // if this is the first tick, call the start method

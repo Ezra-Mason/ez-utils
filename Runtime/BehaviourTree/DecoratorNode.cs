@@ -10,15 +10,19 @@ namespace ezutils.Runtime.BehaviourTree
     /// </summary>
     public abstract class DecoratorNode : Node
     {
+        public Node Child 
+        {
+            get => _child; 
+            set
+            {
+                _child = value;
+                _child.SetParent(this);
+            }
+        }
         protected Node _child;
 
         protected DecoratorNode(BehaviourTree tree) : base(tree)
         {
-        }
-
-        public override NodeState UpdateNode(float deltaTime)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }
