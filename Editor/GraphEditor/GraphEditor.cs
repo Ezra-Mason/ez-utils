@@ -35,6 +35,7 @@ namespace ezutils.Editor
         {
             DrawNodes();
 
+            ProcessNodeEvents();
             ProcessEvents();
 
             if (GUI.changed) Repaint();
@@ -61,48 +62,27 @@ namespace ezutils.Editor
                         ShowContextMenu();
                     }
                     break;
-                case EventType.MouseUp:
-                    break;
-                case EventType.MouseMove:
-                    break;
-                case EventType.MouseDrag:
-                    break;
-                case EventType.KeyDown:
-                    break;
-                case EventType.KeyUp:
-                    break;
-                case EventType.ScrollWheel:
-                    break;
-                case EventType.Repaint:
-                    break;
-                case EventType.Layout:
-                    break;
-                case EventType.DragUpdated:
-                    break;
-                case EventType.DragPerform:
-                    break;
-                case EventType.DragExited:
-                    break;
-                case EventType.Ignore:
-                    break;
-                case EventType.Used:
-                    break;
-                case EventType.ValidateCommand:
-                    break;
-                case EventType.ExecuteCommand:
-                    break;
-                case EventType.ContextClick:
-                    break;
-                case EventType.MouseEnterWindow:
-                    break;
-                case EventType.MouseLeaveWindow:
-                    break;
                 default:
                     break;
             }
         }
 
+        protected void ProcessNodeEvents()
+        {
+            if (_nodes == null) return;
 
+            // go backwards as we drew the nodes forwards, this makes the last node
+            // the one drawn at the top so process its events first
+            for (int i = _nodes.Count -1; i >=0 ; i--)
+            {
+                var guiChanged = _nodes[i].ProcessEvents(Event.current);
+
+                if (guiChanged)
+                {
+                    GUI.changed = true;
+                }
+            }
+        }
         protected void ShowContextMenu()
         {
             
