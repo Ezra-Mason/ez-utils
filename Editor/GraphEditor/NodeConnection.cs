@@ -9,7 +9,9 @@ namespace ezutils.Editor
 
     public class NodeConnection : IGraphElement
     {
+        public NodeSocket In => _in;
         private NodeSocket _in;
+        public NodeSocket Out => _out;
         private NodeSocket _out;
         private Action<NodeConnection> _onClick;
         private readonly float _size = 4;

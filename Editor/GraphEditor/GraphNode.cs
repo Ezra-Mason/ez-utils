@@ -25,6 +25,9 @@ namespace ezutils.Editor
 
         private Action<NodeSocket> _onClickIn;
         private Action<NodeSocket> _onClickOut;
+        private Action<GraphNode> _onRemove;
+
+        private GenericMenu _contextMenu;
         public GraphNode(
             Vector2 position, 
             float width, 
@@ -34,7 +37,8 @@ namespace ezutils.Editor
             GUIStyle inStyle, 
             GUIStyle outStyle, 
             Action<NodeSocket> onClickIn, 
-            Action<NodeSocket> onClickOut)
+            Action<NodeSocket> onClickOut,
+            Action<GraphNode> onClickRemove)
         {
             _rect = new Rect(position.x, position.y, width, height);
             _activeStyle = nodeStyle;
@@ -42,6 +46,11 @@ namespace ezutils.Editor
             _selectedStyle = selectedStyle;
             InSocket = new NodeSocket(SocketType.IN, this, inStyle, onClickIn);
             OutSocket = new NodeSocket(SocketType.OUT, this, outStyle, onClickOut);
+            _onRemove = onClickRemove;
+
+            _contextMenu = new GenericMenu();
+            _contextMenu.AddItem(new GUIContent("Remove node"), false, OnClickRemove);
+
         }
 
         public void Move(Vector2 delta)
@@ -65,6 +74,7 @@ namespace ezutils.Editor
             switch (e.type)
             {
                 case EventType.MouseDown:
+                    //lmb
                     if (e.button == 0)
                     {
 
@@ -78,6 +88,12 @@ namespace ezutils.Editor
                             Deselct();
                         }
                         GUI.changed = true;
+                    }
+                    //rmb
+                    if (e.button == 1 && IsSelected && _rect.Contains(e.mousePosition))
+                    {
+                        ShowContextMenu();
+                        e.Use();
                     }
                     break;
                 case EventType.MouseUp:
@@ -111,6 +127,16 @@ namespace ezutils.Editor
         {
             IsSelected = true;
             _activeStyle = _defaultStyle;
+        }
+        private void ShowContextMenu()
+        {
+            _contextMenu.ShowAsContext();
+        }
+        private void OnClickRemove()
+        {
+            if (_onRemove == null) return;
+            Debug.Log($"onclickRemove");
+            _onRemove(this);
         }
     }
 }

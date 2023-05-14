@@ -15,7 +15,7 @@ namespace ezutils.Editor
         protected GenericMenu _addNodeMenu;
 
         //connections
-        protected List<NodeConnection> _connection;
+        protected List<NodeConnection> _connections;
         protected GUIStyle _inSocketStyle;
         protected GUIStyle _outSocketStyle;
         protected NodeSocket _selectedInSocket;
@@ -67,12 +67,12 @@ namespace ezutils.Editor
         }
         private void DrawConnections()
         {
-            if (_connection == null) return;
-            if (_connection.Count == 0) return;
+            if (_connections == null) return;
+            if (_connections.Count == 0) return;
 
-            for (int i = 0; i < _connection.Count; i++)
+            for (int i = 0; i < _connections.Count; i++)
             {
-                _connection[i].DrawElement();
+                _connections[i].DrawElement();
             }
         }
 
@@ -135,7 +135,20 @@ namespace ezutils.Editor
                 _nodes = new List<GraphNode>();
             }
 
-            _nodes.Add(new GraphNode(mousePosition, 200, 50, _nodeStyle,_nodeSelectedStyle, _inSocketStyle, _outSocketStyle, OnClickInSocket, OnClickOutSocket));
+            _nodes.Add(
+                new GraphNode(
+                    mousePosition,
+                    200,
+                    50,
+                    _nodeStyle,
+                    _nodeSelectedStyle,
+                    _inSocketStyle,
+                    _outSocketStyle,
+                    OnClickInSocket,
+                    OnClickOutSocket,
+                    OnClickRemove
+                    )
+                );
         }
 
         private void OnClickInSocket(NodeSocket socket)
@@ -168,19 +181,40 @@ namespace ezutils.Editor
 
         protected void OnClickConnection(NodeConnection connection)
         {
-            _connection.Remove(connection);
+            _connections.Remove(connection);
         }
+
+        /// <summary>
+        /// Process the users removal of graph node
+        /// </summary>
+        private void OnClickRemove(GraphNode node)
+        {
+            // remove any connections which involve this node first
+            if (_connections != null)
+            {
+                var toRemove = new List<NodeConnection>();
+                for (int i = _connections.Count - 1; i >= 0; i--)
+                {
+                    if (_connections[i].In == node.InSocket || _connections[i].Out == node.OutSocket)
+                    {
+                        _connections.RemoveAt(i);
+                    }
+                }
+            }
+            _nodes.Remove(node);
+        }
+
         /// <summary>
         /// Create a connection between the selected sockets
         /// </summary>
         protected void ConnectSelection()
         {
-            if (_connection == null)
+            if (_connections == null)
             {
-                _connection = new List<NodeConnection>();
+                _connections = new List<NodeConnection>();
             }
 
-            _connection.Add(
+            _connections.Add(
                 new NodeConnection(_selectedInSocket, _selectedOutSocket, OnClickConnection)
                 );
             Debug.Log("connected node");
