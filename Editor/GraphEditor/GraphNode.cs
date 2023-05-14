@@ -3,20 +3,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.ComponentModel.Design.Serialization;
 
 namespace ezutils.Editor
 {
-    public class GraphNode : IGraphElement
+    public class GraphNode : IGraphElement, ISelectable
     {
         public Rect Rect => _rect;
         private Rect _rect;
-        private GUIStyle _style;
+        private GUIStyle _activeStyle;
+        private readonly GUIStyle _defaultStyle;
+        private readonly GUIStyle _selectedStyle;
         private string _title;
         private bool _beingDragged;
 
         //sockets
         public NodeSocket InSocket { get; set; }
         public NodeSocket OutSocket { get; set; }
+
+        public bool IsSelected { get; private set; }
+
         private Action<NodeSocket> _onClickIn;
         private Action<NodeSocket> _onClickOut;
         public GraphNode(
@@ -24,13 +30,16 @@ namespace ezutils.Editor
             float width, 
             float height, 
             GUIStyle nodeStyle, 
+            GUIStyle selectedStyle, 
             GUIStyle inStyle, 
             GUIStyle outStyle, 
             Action<NodeSocket> onClickIn, 
             Action<NodeSocket> onClickOut)
         {
             _rect = new Rect(position.x, position.y, width, height);
-            _style = nodeStyle;
+            _activeStyle = nodeStyle;
+            _defaultStyle = nodeStyle;
+            _selectedStyle = selectedStyle;
             InSocket = new NodeSocket(SocketType.IN, this, inStyle, onClickIn);
             OutSocket = new NodeSocket(SocketType.OUT, this, outStyle, onClickOut);
         }
@@ -44,7 +53,7 @@ namespace ezutils.Editor
         {
             InSocket.DrawElement();
             OutSocket.DrawElement();
-            GUI.Box(_rect, _title, _style);
+            GUI.Box(_rect, _title, _activeStyle);
         }
         /// <summary>
         /// Process input events
@@ -62,6 +71,11 @@ namespace ezutils.Editor
                         if (_rect.Contains(e.mousePosition))
                         {
                             _beingDragged = true;
+                            Select();
+                        }
+                        else
+                        {
+                            Deselct();
                         }
                         GUI.changed = true;
                     }
@@ -85,6 +99,18 @@ namespace ezutils.Editor
                     break;
             }
             return false;
+        }
+
+        public void Select()
+        {
+            IsSelected = true;
+            _activeStyle = _selectedStyle;
+        }
+
+        public void Deselct()
+        {
+            IsSelected = true;
+            _activeStyle = _defaultStyle;
         }
     }
 }
