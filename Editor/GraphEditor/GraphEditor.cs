@@ -8,6 +8,7 @@ namespace ezutils.Editor
     public class GraphEditor : EditorWindow
     {
         Vector2 _mousePosition;
+        Vector2 _delta;
 
         protected List<GraphNode> _nodes;
         protected GUIStyle _nodeStyle;
@@ -89,6 +90,7 @@ namespace ezutils.Editor
         private void ProcessEvents()
         {
             _mousePosition = Event.current.mousePosition;
+            _delta = Vector2.zero;
             switch (Event.current.type)
             {
                 case EventType.MouseDown:
@@ -99,6 +101,12 @@ namespace ezutils.Editor
                     if (Event.current.button == 0 && _selectedOutSocket != null)
                     {
                         DeselectSockets();
+                    }
+                    break;
+                case EventType.MouseDrag:
+                    if (Event.current.button == 2)
+                    {
+                        OnDrag(Event.current.delta);
                     }
                     break;
                 default:
@@ -229,6 +237,19 @@ namespace ezutils.Editor
             _selectedOutSocket?.Deselct();
             _selectedInSocket = null;
             _selectedOutSocket = null;
+        }
+
+        private void OnDrag(Vector2 delta)
+        {
+            _delta = delta;
+            if (_nodes == null) return;
+
+            for (int i = 0; i < _nodes.Count; i++)
+            {
+                _nodes[i].Move(delta);
+            }
+
+            GUI.changed = true;
         }
     }
 }
