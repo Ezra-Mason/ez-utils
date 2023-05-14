@@ -13,6 +13,14 @@ namespace ezutils.Editor
         protected GUIStyle _nodeStyle;
         protected GenericMenu _addNodeMenu;
 
+        //connections
+        protected List<NodeConnection> _connection;
+        protected GUIStyle _inSocketStyle;
+        protected GUIStyle _outSocketStyle;
+        protected NodeSocket _selectedInSocket;
+        protected NodeSocket _selectedOutSocket;
+        protected bool _isDirectional = false;
+
         [MenuItem("ez-utils/Graph Editor")]
         private static void OpenWindow()
         {
@@ -22,9 +30,20 @@ namespace ezutils.Editor
 
         private void OnEnable()
         {
+            _isDirectional = true;
             _nodeStyle = new GUIStyle();
-            _nodeStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/node1.png") as Texture2D;
+            _nodeStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/node0.png") as Texture2D;
             _nodeStyle.border = new RectOffset(12, 12, 12, 12);
+
+            _inSocketStyle = new GUIStyle();
+            _inSocketStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn left.png") as Texture2D;
+            _inSocketStyle.active.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn left on.png") as Texture2D;
+            _inSocketStyle.border = new RectOffset(4, 4, 12, 12);
+
+            _outSocketStyle = new GUIStyle();
+            _outSocketStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn right.png") as Texture2D;
+            _outSocketStyle.active.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn right on.png") as Texture2D;
+            _outSocketStyle.border = new RectOffset(4, 4, 12, 12);
 
             _addNodeMenu = new GenericMenu();
             _addNodeMenu.AddItem(new GUIContent("Add Node"), false, () => OnClickAddNode(_mousePosition));
@@ -33,12 +52,24 @@ namespace ezutils.Editor
 
         private void OnGUI()
         {
+
+            DrawConnections();
             DrawNodes();
 
             ProcessNodeEvents();
             ProcessEvents();
 
             if (GUI.changed) Repaint();
+        }
+        private void DrawConnections()
+        {
+            if (_connection == null) return;
+            if (_connection.Count == 0) return;
+
+            for (int i = 0; i < _connection.Count; i++)
+            {
+                _connection[i].DrawElement();
+            }
         }
 
         private void DrawNodes()
@@ -48,7 +79,7 @@ namespace ezutils.Editor
 
             for (int i = 0; i < _nodes.Count; i++)
             {
-                _nodes[i].Draw();
+                _nodes[i].DrawElement();
             }
         }
         private void ProcessEvents()
@@ -60,6 +91,10 @@ namespace ezutils.Editor
                     if (Event.current.button == 1)
                     {
                         ShowContextMenu();
+                    }
+                    if (Event.current.button == 0 && _selectedOutSocket != null)
+                    {
+                        DeselectSockets();
                     }
                     break;
                 default:
@@ -73,7 +108,7 @@ namespace ezutils.Editor
 
             // go backwards as we drew the nodes forwards, this makes the last node
             // the one drawn at the top so process its events first
-            for (int i = _nodes.Count -1; i >=0 ; i--)
+            for (int i = _nodes.Count - 1; i >= 0; i--)
             {
                 var guiChanged = _nodes[i].ProcessEvents(Event.current);
 
@@ -85,7 +120,7 @@ namespace ezutils.Editor
         }
         protected void ShowContextMenu()
         {
-            
+
             _addNodeMenu.ShowAsContext();
         }
 
@@ -96,7 +131,66 @@ namespace ezutils.Editor
                 _nodes = new List<GraphNode>();
             }
 
-            _nodes.Add(new GraphNode(mousePosition, 200, 50, _nodeStyle));
+            _nodes.Add(new GraphNode(mousePosition, 200, 50, _nodeStyle, _inSocketStyle, _outSocketStyle, OnClickInSocket, OnClickOutSocket));
+        }
+
+        private void OnClickInSocket(NodeSocket socket)
+        {
+            _selectedInSocket = socket;
+            socket.Select();
+            Debug.Log("selected in node");
+            if (_selectedOutSocket == null) return;
+            if (_selectedOutSocket != _selectedInSocket)
+            {
+                Debug.Log("connected from in node");
+                ConnectSelection();
+            }
+            DeselectSockets();
+        }
+        private void OnClickOutSocket(NodeSocket socket)
+        {
+            _selectedOutSocket = socket;
+            socket.Select();
+            Debug.Log("selected out node");
+            if (_selectedInSocket == null) return;
+            if (_selectedOutSocket != _selectedInSocket && !_isDirectional)
+            {
+                ConnectSelection();
+                Debug.Log("connected from out node");
+            }
+
+            DeselectSockets();
+        }
+
+        protected void OnClickConnection(NodeConnection connection)
+        {
+            _connection.Remove(connection);
+        }
+        /// <summary>
+        /// Create a connection between the selected sockets
+        /// </summary>
+        protected void ConnectSelection()
+        {
+            if (_connection == null)
+            {
+                _connection = new List<NodeConnection>();
+            }
+
+            _connection.Add(
+                new NodeConnection(_selectedInSocket, _selectedOutSocket, OnClickConnection)
+                );
+            Debug.Log("connected node");
+
+        }
+        /// <summary>
+        /// Null all socket selections
+        /// </summary>
+        protected void DeselectSockets()
+        {
+            _selectedInSocket?.Deselct();
+            _selectedOutSocket?.Deselct();
+            _selectedInSocket = null;
+            _selectedOutSocket = null;
         }
     }
 }

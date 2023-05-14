@@ -1,21 +1,38 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using System.Runtime.InteropServices;
 
 namespace ezutils.Editor
 {
-    public class GraphNode
+    public class GraphNode : IGraphElement
     {
+        public Rect Rect => _rect;
         private Rect _rect;
         private GUIStyle _style;
         private string _title;
         private bool _beingDragged;
-        public GraphNode(Vector2 position, float width, float height, GUIStyle nodeStyle)
+
+        //sockets
+        public NodeSocket InSocket { get; set; }
+        public NodeSocket OutSocket { get; set; }
+        private Action<NodeSocket> _onClickIn;
+        private Action<NodeSocket> _onClickOut;
+        public GraphNode(
+            Vector2 position, 
+            float width, 
+            float height, 
+            GUIStyle nodeStyle, 
+            GUIStyle inStyle, 
+            GUIStyle outStyle, 
+            Action<NodeSocket> onClickIn, 
+            Action<NodeSocket> onClickOut)
         {
             _rect = new Rect(position.x, position.y, width, height);
             _style = nodeStyle;
+            InSocket = new NodeSocket(SocketType.IN, this, inStyle, onClickIn);
+            OutSocket = new NodeSocket(SocketType.OUT, this, outStyle, onClickOut);
         }
 
         public void Move(Vector2 delta)
@@ -23,8 +40,10 @@ namespace ezutils.Editor
             _rect.position += delta;
         }
 
-        public void Draw()
+        public void DrawElement()
         {
+            InSocket.DrawElement();
+            OutSocket.DrawElement();
             GUI.Box(_rect, _title, _style);
         }
         /// <summary>
