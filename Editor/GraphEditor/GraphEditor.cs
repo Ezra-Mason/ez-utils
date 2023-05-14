@@ -9,6 +9,7 @@ namespace ezutils.Editor
     {
         Vector2 _mousePosition;
         Vector2 _delta;
+        Vector2 _offset;
 
         protected List<GraphNode> _nodes;
         protected GUIStyle _nodeStyle;
@@ -54,10 +55,10 @@ namespace ezutils.Editor
             _addNodeMenu.AddItem(new GUIContent("Add Node"), false, () => OnClickAddNode(_mousePosition));
 
         }
-
         private void OnGUI()
         {
-
+            DrawGrid(20, 0.2f, Color.gray);
+            DrawGrid(100, 0.4f, Color.gray);
             DrawConnections();
             DrawNodes();
 
@@ -65,6 +66,33 @@ namespace ezutils.Editor
             ProcessEvents();
 
             if (GUI.changed) Repaint();
+        }
+        private void DrawGrid(float spacing, float opacity, Color color)
+        {
+            int x = Mathf.CeilToInt(position.width / spacing);
+            int y = Mathf.CeilToInt(position.height / spacing);
+
+            Handles.BeginGUI();
+            using (new Handles.DrawingScope(color: new Color(color.r, color.g, color.b, opacity)))
+            {
+
+                Vector3 offset = new Vector3(_offset.x % spacing, _offset.y % spacing, 0);
+                // vertical lines
+                for (int i = 0; i < x; i++)
+                {
+                    Handles.DrawLine(
+                        new Vector3(spacing * i, -spacing, 0f) + offset,
+                        new Vector3(spacing * i, position.height + spacing, 0f) + offset);
+                }
+                // horizontal lines
+                for (int i = 0; i < y; i++)
+                {
+                    Handles.DrawLine(
+                        new Vector3(-spacing, spacing * i, 0f) + offset,
+                        new Vector3(position.width + spacing, spacing * i, 0f) + offset);
+                }
+            }
+            Handles.EndGUI();
         }
         private void DrawConnections()
         {
@@ -113,7 +141,6 @@ namespace ezutils.Editor
                     break;
             }
         }
-
         protected void ProcessNodeEvents()
         {
             if (_nodes == null) return;
@@ -135,7 +162,6 @@ namespace ezutils.Editor
 
             _addNodeMenu.ShowAsContext();
         }
-
         private void OnClickAddNode(Vector2 mousePosition)
         {
             if (_nodes == null)
@@ -159,6 +185,7 @@ namespace ezutils.Editor
                 );
         }
 
+        #region Connections
         private void OnClickInSocket(NodeSocket socket)
         {
             _selectedInSocket = socket;
@@ -186,11 +213,11 @@ namespace ezutils.Editor
 
             DeselectSockets();
         }
-
         protected void OnClickConnection(NodeConnection connection)
         {
             _connections.Remove(connection);
         }
+        #endregion
 
         /// <summary>
         /// Process the users removal of graph node
@@ -238,10 +265,11 @@ namespace ezutils.Editor
             _selectedInSocket = null;
             _selectedOutSocket = null;
         }
-
         private void OnDrag(Vector2 delta)
         {
             _delta = delta;
+            _offset += _delta;
+
             if (_nodes == null) return;
 
             for (int i = 0; i < _nodes.Count; i++)
