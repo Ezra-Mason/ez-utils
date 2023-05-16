@@ -31,7 +31,7 @@ namespace ezutils.Editor
             window.titleContent = new GUIContent("Graph view");
         }
 
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
             _isDirectional = true;
             _nodeStyle = new GUIStyle();
@@ -55,7 +55,7 @@ namespace ezutils.Editor
             _addNodeMenu.AddItem(new GUIContent("Add Node"), false, () => OnClickAddNode(_mousePosition));
 
         }
-        private void OnGUI()
+        protected virtual void OnGUI()
         {
             DrawGrid(20, 0.2f, Color.gray);
             DrawGrid(100, 0.4f, Color.gray);
@@ -186,7 +186,7 @@ namespace ezutils.Editor
         }
 
         #region Connections
-        private void OnClickInSocket(NodeSocket socket)
+        protected void OnClickInSocket(NodeSocket socket)
         {
             _selectedInSocket = socket;
             socket.Select();
@@ -199,7 +199,7 @@ namespace ezutils.Editor
             }
             DeselectSockets();
         }
-        private void OnClickOutSocket(NodeSocket socket)
+        protected void OnClickOutSocket(NodeSocket socket)
         {
             _selectedOutSocket = socket;
             socket.Select();
@@ -222,7 +222,7 @@ namespace ezutils.Editor
         /// <summary>
         /// Process the users removal of graph node
         /// </summary>
-        private void OnClickRemove(GraphNode node)
+        protected void OnClickRemove(GraphNode node)
         {
             // remove any connections which involve this node first
             if (_connections != null)
@@ -265,7 +265,7 @@ namespace ezutils.Editor
             _selectedInSocket = null;
             _selectedOutSocket = null;
         }
-        private void OnDrag(Vector2 delta)
+        protected void OnDrag(Vector2 delta)
         {
             _delta = delta;
             _offset += _delta;

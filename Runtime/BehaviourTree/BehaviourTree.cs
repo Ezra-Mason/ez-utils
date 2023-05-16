@@ -4,9 +4,19 @@ using UnityEngine;
 
 namespace ezutils.Runtime.BehaviourTree
 {
-    public class BehaviourTree : ScriptableObject
+#if UNITY_EDITOR
+
+    public partial class BehaviourTree 
+    {
+        public Node EDITOR_RootNode => _rootNode;
+    }
+
+#endif
+    [CreateAssetMenu(menuName ="ez-utils/Behaviour Tree")]
+    public partial class BehaviourTree : ScriptableObject
     {
         private Node _rootNode;
+        [SerializeField] private List<Node> _nodes;
 
         public bool SetRootNode(Node node)
         {
