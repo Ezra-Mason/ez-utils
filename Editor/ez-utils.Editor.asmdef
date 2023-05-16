@@ -1,7 +1,10 @@
 {
     "name": "ezutils.Editor",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "GUID:1b1d13a026880f745b091784f6e2d887",
+        "GUID:bef3e7e6a29572b4b9af563310115a19"
+    ],
     "includePlatforms": [
         "Editor"
     ],
