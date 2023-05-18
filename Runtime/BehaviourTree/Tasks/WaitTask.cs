@@ -8,10 +8,6 @@ namespace ezutils.Runtime.BehaviourTree
     {
         private float _waitTime;
         private float _timer;
-        public WaitTask(BehaviourTree tree, float waitTime) : base(tree)
-        {
-            _waitTime = waitTime;
-        }
 
         protected override void OnStart()
         {

@@ -6,9 +6,6 @@ namespace ezutils.Runtime.BehaviourTree
 {
     public abstract class TaskNode : Node
     {
-        protected TaskNode(BehaviourTree tree) : base(tree)
-        {
-        }
-
+        //TODO: add generic parameter setting for task nodes
     }
 }

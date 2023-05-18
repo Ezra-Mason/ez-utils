@@ -10,12 +10,12 @@ namespace ezutils.Editor
     public class GraphNode : IGraphElement, ISelectable
     {
         public Rect Rect => _rect;
-        private Rect _rect;
-        private GUIStyle _activeStyle;
-        private readonly GUIStyle _defaultStyle;
-        private readonly GUIStyle _selectedStyle;
-        private string _title;
-        private bool _beingDragged;
+        protected Rect _rect;
+        protected GUIStyle _activeStyle;
+        protected readonly GUIStyle _defaultStyle;
+        protected readonly GUIStyle _selectedStyle;
+        protected string _title;
+        protected bool _beingDragged;
 
         //sockets
         public NodeSocket InSocket { get; set; }
@@ -58,7 +58,7 @@ namespace ezutils.Editor
             _rect.position += delta;
         }
 
-        public void DrawElement()
+        public virtual void DrawElement()
         {
             InSocket.DrawElement();
             OutSocket.DrawElement();

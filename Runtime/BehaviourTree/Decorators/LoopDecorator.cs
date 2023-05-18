@@ -4,12 +4,8 @@ using UnityEngine;
 
 namespace ezutils.Runtime.BehaviourTree
 {
-    public class LoopNode : DecoratorNode
+    public class LoopDecorator: DecoratorNode
     {
-        public LoopNode(BehaviourTree tree) : base(tree)
-        {
-        }
-
         protected override void OnStart()
         {
         }

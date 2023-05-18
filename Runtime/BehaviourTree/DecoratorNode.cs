@@ -20,9 +20,5 @@ namespace ezutils.Runtime.BehaviourTree
             }
         }
         protected Node _child;
-
-        protected DecoratorNode(BehaviourTree tree) : base(tree)
-        {
-        }
     }
 }

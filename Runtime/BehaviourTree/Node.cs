@@ -14,8 +14,15 @@ namespace ezutils.Runtime.BehaviourTree
     /// <summary>
     /// Base class for any node within the BehaviourTree
     /// </summary>
-    public abstract class Node
+
+    // I dont really want this to be an SO but it makes two things easier
+    // - creating an instance from a type e.g. ScriptableObject.CreateInstance<T>()
+    // - tracking nodes in a behaviour from the asset view
+
+    public abstract class Node : ScriptableObject
     {
+        public string NodeName { get; set; }
+
         protected BehaviourTree _tree;
         public NodeState State => _state;
         protected NodeState _state;
@@ -25,9 +32,19 @@ namespace ezutils.Runtime.BehaviourTree
 
         protected bool _started = false;
 
-        public Node(BehaviourTree tree)
+        /// <summary>
+        /// Set this node to be part of the given tree
+        /// </summary>
+        /// <param name="tree"></param>
+        /// <returns>was the node successfully set to part of the tree</returns>
+        public bool SetTree(BehaviourTree tree)
         {
-            _tree = tree;
+            if (_tree == null)
+            {
+                _tree = tree;
+                return true;
+            }
+            return false;
         }
 
         //this might need to be changed to a set child node 
@@ -49,7 +66,7 @@ namespace ezutils.Runtime.BehaviourTree
             _state = OnUpdateNode(deltaTime);
 
             // if the node has started but has now exited, call the stop method
-            var shouldExit = _started && 
+            var shouldExit = _started &&
                             (_state == NodeState.FAILURE || _state == NodeState.SUCCESS);
             if (shouldExit)
             {

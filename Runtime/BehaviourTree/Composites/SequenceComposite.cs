@@ -7,12 +7,9 @@ namespace ezutils.Runtime.BehaviourTree
     /// <summary>
     /// Executes child nodes until it reaches a one which fails
     /// </summary>
-    public class SequencerNode : CompositeNode
+    public class SequenceComposite : CompositeNode
     {
         private int _executionIdx = 0;
-        public SequencerNode(BehaviourTree tree) : base(tree)
-        {
-        }
 
         protected override void OnStart()
         {

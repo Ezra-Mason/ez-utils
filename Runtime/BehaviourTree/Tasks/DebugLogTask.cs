@@ -4,13 +4,9 @@ using UnityEngine;
 
 namespace ezutils.Runtime.BehaviourTree
 {
-    public class DebugLogNode : TaskNode
+    public class DebugLogTask : TaskNode
     {
         protected string _log;
-        public DebugLogNode(BehaviourTree tree, string log) : base(tree)
-        {
-            _log = log;
-        }
 
         protected override void OnStart()
         {

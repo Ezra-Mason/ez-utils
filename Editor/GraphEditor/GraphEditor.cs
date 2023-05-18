@@ -7,7 +7,7 @@ namespace ezutils.Editor
 {
     public class GraphEditor : EditorWindow
     {
-        Vector2 _mousePosition;
+        protected Vector2 _mousePosition;
         Vector2 _delta;
         Vector2 _offset;
 
@@ -157,7 +157,7 @@ namespace ezutils.Editor
                 }
             }
         }
-        protected void ShowContextMenu()
+        protected virtual void ShowContextMenu()
         {
 
             _addNodeMenu.ShowAsContext();

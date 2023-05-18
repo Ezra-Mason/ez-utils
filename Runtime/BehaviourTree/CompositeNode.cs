@@ -20,8 +20,5 @@ namespace ezutils.Runtime.BehaviourTree
         }
 
         protected List<Node> _children = new List<Node>();
-        protected CompositeNode(BehaviourTree tree) : base(tree)
-        {
-        }
     }
 }
