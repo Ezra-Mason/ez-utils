@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using ezutils.Runtime.BehaviourTree;
 using System;
+using System.Runtime.InteropServices;
 
 namespace ezutils.Editor
 {
@@ -25,6 +26,12 @@ namespace ezutils.Editor
             {
                 _title = str;
             }
+        }
+
+
+        protected override void ShowContextMenu()
+        {
+            base.ShowContextMenu();
         }
     }
 }

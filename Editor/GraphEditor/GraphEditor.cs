@@ -222,7 +222,7 @@ namespace ezutils.Editor
         /// <summary>
         /// Process the users removal of graph node
         /// </summary>
-        protected void OnClickRemove(GraphNode node)
+        protected virtual void OnClickRemove(GraphNode node)
         {
             // remove any connections which involve this node first
             if (_connections != null)

@@ -10,7 +10,7 @@ namespace ezutils.Editor
     public class BehaviourTreeGraph : GraphEditor
     {
         private BehaviourTree _treeAsset;
-
+        private Dictionary<GraphNode, Node> _nodeMap = new Dictionary<GraphNode, Node>();
         public static void OpenWindow(BehaviourTree treeAsset)
         {
             BehaviourTreeGraph window = GetWindow<BehaviourTreeGraph>();
@@ -40,8 +40,6 @@ namespace ezutils.Editor
                 CreateNodeElement(node);
             }
         }
-
-
 
         protected override void ShowContextMenu()
         {
@@ -81,27 +79,31 @@ namespace ezutils.Editor
 
 
         /// <summary>
-        /// Create the GraphNode representing 
+        /// Create a <see cref="ezutils.Editor.GraphNode"/> representing the given <see cref="ezutils.Runtime.BehaviourTree.Node"/>
         /// </summary>
-        /// <param name="node"></param>
+        /// <param name="node">The node to be visualised</param>
         private void CreateNodeElement(Node node)
         {
-            _nodes.Add(
-    new BTGraphNode(
-        _mousePosition,
-        200,
-        50,
-        _nodeStyle,
-        _nodeSelectedStyle,
-        _inSocketStyle,
-        _outSocketStyle,
-        OnClickInSocket,
-        OnClickOutSocket,
-        OnClickRemove
-        )
-    );
+            var graphNode = new BTGraphNode(
+                _mousePosition,
+                200,
+                50,
+                _nodeStyle,
+                _nodeSelectedStyle,
+                _inSocketStyle,
+                _outSocketStyle,
+                OnClickInSocket,
+                OnClickOutSocket,
+                OnClickRemove);
+            _nodes.Add(graphNode);
+            _nodeMap[graphNode] = node;
             Debug.Log("Created visual node ");
+        }
 
+        protected override void OnClickRemove(GraphNode node)
+        {
+            base.OnClickRemove(node);
+            _treeAsset.DeleteNode(_nodeMap[node]);
         }
     }
 }

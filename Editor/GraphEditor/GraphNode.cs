@@ -128,7 +128,10 @@ namespace ezutils.Editor
             IsSelected = true;
             _activeStyle = _defaultStyle;
         }
-        private void ShowContextMenu()
+        /// <summary>
+        /// Show the <see cref="UnityEditor.GenericMenu"/> when right clicking on a node
+        /// </summary>
+        protected virtual void ShowContextMenu()
         {
             _contextMenu.ShowAsContext();
         }
