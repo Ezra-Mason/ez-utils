@@ -53,7 +53,10 @@ namespace ezutils.Editor
 
             _addNodeMenu = new GenericMenu();
             _addNodeMenu.AddItem(new GUIContent("Add Node"), false, () => OnClickAddNode(_mousePosition));
-
+            if (_nodes == null)
+            {
+                _nodes = new List<GraphNode>();
+            }
         }
         protected virtual void OnGUI()
         {

@@ -18,6 +18,14 @@ namespace ezutils.Editor
             window.Init(treeAsset);
         }
 
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            if (_nodeMap == null)
+            {
+                _nodeMap = new Dictionary<GraphNode, Node>();
+            }
+        }
         private void Init(BehaviourTree treeAsset)
         {
             _treeAsset = treeAsset;
