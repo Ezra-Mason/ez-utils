@@ -25,6 +25,7 @@ namespace ezutils.Editor
             {
                 _nodeMap = new Dictionary<GraphNode, Node>();
             }
+
         }
         private void Init(BehaviourTree treeAsset)
         {
@@ -40,10 +41,8 @@ namespace ezutils.Editor
 
         private void PopulateTree()
         {
-            Debug.Log("Populating tree...");
             for (int i = 0; i < _treeAsset.EDITOR_Nodes.Count; i++)
             {
-                Debug.Log($"Creating element {i}/{_treeAsset.EDITOR_Nodes.Count}");
                 var node = _treeAsset.EDITOR_Nodes[i];
                 CreateNodeElement(node);
             }
@@ -92,12 +91,14 @@ namespace ezutils.Editor
         /// <param name="node">The node to be visualised</param>
         private void CreateNodeElement(Node node)
         {
+            var pos = _mousePosition;
+            if (_treeAsset.EDITOR_NodePositions.ContainsKey(node))
+            {
+                pos = _treeAsset.EDITOR_NodePositions[node];
+            }
+
             var graphNode = new BTGraphNode(
-                _mousePosition,
-                200,
-                50,
-                _nodeStyle,
-                _nodeSelectedStyle,
+                pos,
                 _inSocketStyle,
                 _outSocketStyle,
                 OnClickInSocket,
@@ -105,13 +106,23 @@ namespace ezutils.Editor
                 OnClickRemove);
             _nodes.Add(graphNode);
             _nodeMap[graphNode] = node;
-            Debug.Log("Created visual node ");
         }
 
         protected override void OnClickRemove(GraphNode node)
         {
             base.OnClickRemove(node);
             _treeAsset.DeleteNode(_nodeMap[node]);
+        }
+
+        public void OnDisable()
+        {
+
+            //save the positions of the nodes when closing the graph window
+            for (int i = 0; i < _nodes.Count; i++)
+            {
+                Node n = _nodeMap[_nodes[i]];
+                _treeAsset.EDITOR_NodePositions[n] = _nodes[i].Rect.position;
+            }
         }
     }
 }

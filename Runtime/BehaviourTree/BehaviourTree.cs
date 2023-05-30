@@ -12,6 +12,22 @@ namespace ezutils.Runtime.BehaviourTree
     {
         public Node EDITOR_RootNode => _rootNode;
         public List<Node> EDITOR_Nodes => _nodes;
+        public Dictionary<Node, Vector2> EDITOR_NodePositions
+        {
+            get
+            {
+                if (EDITOR_nodePositions == null)
+                {
+                    EDITOR_nodePositions = new Dictionary<Node, Vector2>();
+                }
+                return EDITOR_nodePositions;
+            }
+            set
+            {
+                EDITOR_nodePositions = value;
+            }
+        }
+        private Dictionary<Node, Vector2> EDITOR_nodePositions;
     }
 
 #endif
@@ -46,7 +62,7 @@ namespace ezutils.Runtime.BehaviourTree
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public Node CreateNode(Type type) 
+        public Node CreateNode(Type type)
         {
             var node = ScriptableObject.CreateInstance(type) as Node;
             node.NodeName = type.Name;

@@ -12,8 +12,6 @@ namespace ezutils.Editor
         Vector2 _offset;
 
         protected List<GraphNode> _nodes;
-        protected GUIStyle _nodeStyle;
-        protected GUIStyle _nodeSelectedStyle;
         protected GenericMenu _addNodeMenu;
 
         //connections
@@ -34,12 +32,6 @@ namespace ezutils.Editor
         protected virtual void OnEnable()
         {
             _isDirectional = true;
-            _nodeStyle = new GUIStyle();
-            _nodeStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/node0.png") as Texture2D;
-            _nodeStyle.border = new RectOffset(12, 12, 12, 12);
-            _nodeSelectedStyle = new GUIStyle();
-            _nodeSelectedStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/node0 on.png") as Texture2D;
-            _nodeSelectedStyle.border = new RectOffset(12, 12, 12, 12);
 
             _inSocketStyle = new GUIStyle();
             _inSocketStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn left.png") as Texture2D;
@@ -175,10 +167,6 @@ namespace ezutils.Editor
             _nodes.Add(
                 new GraphNode(
                     mousePosition,
-                    200,
-                    50,
-                    _nodeStyle,
-                    _nodeSelectedStyle,
                     _inSocketStyle,
                     _outSocketStyle,
                     OnClickInSocket,

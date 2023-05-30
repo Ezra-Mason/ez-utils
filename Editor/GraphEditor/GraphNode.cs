@@ -11,10 +11,31 @@ namespace ezutils.Editor
     {
         public Rect Rect => _rect;
         protected Rect _rect;
+
+        protected float _defaultHeight = 50f;
+        protected float _defaultWidth = 200f;
         protected GUIStyle _activeStyle;
-        protected readonly GUIStyle _defaultStyle;
-        protected readonly GUIStyle _selectedStyle;
+        protected GUIStyle _defaultStyle = new GUIStyle
+        {
+            normal = 
+            {
+                    background = EditorGUIUtility.Load("builtin skins/darkskin/images/node0.png") as Texture2D
+            },
+            border = new RectOffset(12, 12, 12, 12)
+        };
+
+        protected GUIStyle _selectedStyle = new GUIStyle
+        {
+            normal =
+                {
+                    background = EditorGUIUtility.Load("builtin skins/darkskin/images/node0 on.png") as Texture2D
+                },
+            border = new RectOffset(12, 12, 12, 12)
+        };
+
         protected string _title;
+
+        protected Vector2 _position;
         protected bool _beingDragged;
 
         //sockets
@@ -29,21 +50,15 @@ namespace ezutils.Editor
 
         private GenericMenu _contextMenu;
         public GraphNode(
-            Vector2 position, 
-            float width, 
-            float height, 
-            GUIStyle nodeStyle, 
-            GUIStyle selectedStyle, 
-            GUIStyle inStyle, 
-            GUIStyle outStyle, 
-            Action<NodeSocket> onClickIn, 
+            Vector2 position,
+            GUIStyle inStyle,
+            GUIStyle outStyle,
+            Action<NodeSocket> onClickIn,
             Action<NodeSocket> onClickOut,
             Action<GraphNode> onClickRemove)
         {
-            _rect = new Rect(position.x, position.y, width, height);
-            _activeStyle = nodeStyle;
-            _defaultStyle = nodeStyle;
-            _selectedStyle = selectedStyle;
+            _rect = new Rect(position.x, position.y, _defaultWidth, _defaultHeight);
+            _activeStyle = _defaultStyle;
             InSocket = new NodeSocket(SocketType.IN, this, inStyle, onClickIn);
             OutSocket = new NodeSocket(SocketType.OUT, this, outStyle, onClickOut);
             _onRemove = onClickRemove;
@@ -53,7 +68,7 @@ namespace ezutils.Editor
 
         }
 
-        public void Move(Vector2 delta)
+        public virtual void Move(Vector2 delta)
         {
             _rect.position += delta;
         }
