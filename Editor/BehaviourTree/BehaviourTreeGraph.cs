@@ -58,17 +58,17 @@ namespace ezutils.Editor
             // decorators
             menu.AddSeparator("");
             var decorators = TypeCache.GetTypesDerivedFrom<DecoratorNode>();
-            for (int i = 0; i < decorators.Count; i++)
+            foreach (var type in decorators)
             {
-                menu.AddItem(new GUIContent($"{decorators[i].Name}"), false, () => CreateNodeOfType(decorators[i]));
+                menu.AddItem(new GUIContent($"{type.Name}"), false, () => CreateNodeOfType(type));
             }
 
             // task
             menu.AddSeparator("");
             var taskNodes = TypeCache.GetTypesDerivedFrom<TaskNode>();
-            for (int i = 0; i < taskNodes.Count; i++)
+            foreach (var type in taskNodes)
             {
-                menu.AddItem(new GUIContent($"{taskNodes[i].Name}"), false, () => CreateNodeOfType(taskNodes[i]));
+                menu.AddItem(new GUIContent($"{type.Name}"), false, () => CreateNodeOfType(type));
             }
 
             menu.ShowAsContext();
@@ -106,6 +106,7 @@ namespace ezutils.Editor
                 OnClickRemove);
             _nodes.Add(graphNode);
             _nodeMap[graphNode] = node;
+            _treeAsset.EDITOR_NodePositions[node] = pos;
         }
 
         protected override void OnClickRemove(GraphNode node)
@@ -114,9 +115,9 @@ namespace ezutils.Editor
             _treeAsset.DeleteNode(_nodeMap[node]);
         }
 
+
         public void OnDisable()
         {
-
             //save the positions of the nodes when closing the graph window
             for (int i = 0; i < _nodes.Count; i++)
             {
