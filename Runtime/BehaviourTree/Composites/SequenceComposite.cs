@@ -28,13 +28,16 @@ namespace ezutils.Runtime.BehaviourTree
             {
                 //this node is still running so we need to wait for it to complete
                 case NodeState.RUNNING:
+                    Debug.Log($"child {_executionIdx} is still running");
                     return state;
                 // this child node is fine, move to the next in the list
                 case NodeState.SUCCESS:
+                    Debug.Log($"child {_executionIdx} succeeded");
                     _executionIdx++;
                     break;
                 // the child node causes this node to complete
                 case NodeState.FAILURE:
+                    Debug.Log($"child {_executionIdx} failed");
                     return state;
                 default:
                     break;

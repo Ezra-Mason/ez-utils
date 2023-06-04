@@ -10,13 +10,14 @@ namespace ezutils.Runtime.BehaviourTree
     /// </summary>
     public abstract class DecoratorNode : Node
     {
+        public override List<Node> Children => new List<Node>() { _child };
         public Node Child 
         {
-            get => _child; 
+            get => _child;
             set
             {
                 _child = value;
-                _child.SetParent(this);
+                //_child.SetParent(this);
             }
         }
         protected Node _child;

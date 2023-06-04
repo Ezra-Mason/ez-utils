@@ -1,75 +1,38 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 namespace ezutils.Runtime.BehaviourTree
 {
 #if UNITY_EDITOR
+    using UnityEditor;
 
     public partial class BehaviourTree
     {
         public Node EDITOR_RootNode => _rootNode;
         public List<Node> EDITOR_Nodes => _nodes;
-        public Dictionary<Node, Vector2> EDITOR_NodePositions
-        {
-            get
-            {
-                if (EDITOR_nodePositions == null)
-                {
-                    EDITOR_nodePositions = new Dictionary<Node, Vector2>();
-                }
-                return EDITOR_nodePositions;
-            }
-            set
-            {
-                EDITOR_nodePositions = value;
-            }
-        }
-        private Dictionary<Node, Vector2> EDITOR_nodePositions;
-    }
-
-#endif
-    [CreateAssetMenu(menuName = "ez-utils/Behaviour Tree")]
-    public partial class BehaviourTree : ScriptableObject
-    {
-        private Node _rootNode;
-        [SerializeField] private List<Node> _nodes = new List<Node>();
-
-        public bool SetRootNode(Node node)
-        {
-            if (_rootNode != null) return false;
-
-            _rootNode = node;
-            return true;
-        }
-
-        public NodeState UpdateTree(float deltaTime)
-        {
-            if (_rootNode.State == NodeState.RUNNING)
-            {
-                return _rootNode.UpdateNode(deltaTime);
-            }
-
-            return _rootNode.State;
-        }
-
-        public NodeState State => _rootNode.State;
 
         /// <summary>
         /// Create a node of a given type
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public Node CreateNode(Type type)
+        public Node CreateNode(Type type) 
         {
             var node = ScriptableObject.CreateInstance(type) as Node;
             node.NodeName = type.Name;
+            node.name = type.Name;
             node.SetTree(this);
             Debug.Log($"Created a {node.NodeName} node");
+            
             _nodes.Add(node);
 
+            var root = node as RootNode;
+            if (root)
+            {
+                SetRootNode(node);
+            }
             AssetDatabase.AddObjectToAsset(node, this);
             AssetDatabase.SaveAssets();
             return node;
@@ -85,5 +48,72 @@ namespace ezutils.Runtime.BehaviourTree
             AssetDatabase.RemoveObjectFromAsset(node);
             AssetDatabase.SaveAssets();
         }
+    }
+
+#endif
+    [CreateAssetMenu(menuName = "ez-utils/Behaviour Tree")]
+    public partial class BehaviourTree : ScriptableObject
+    {
+
+        [SerializeField] private Node _rootNode;
+        [SerializeField] private List<Node> _nodes = new List<Node>();
+        private void OnEnable()
+        {
+            if (!_rootNode)
+            {
+/*#if UNITY_EDITOR
+                _rootNode = CreateNode(typeof(RootNode));
+#endif*/
+            }
+        }
+        public bool SetRootNode(Node node)
+        {
+            if (_rootNode != null) return false;
+
+            _rootNode = node;
+            return true;
+        }
+
+        /// <summary>
+        /// Link two <see cref="ezutils.Runtime.BehaviourTree.Node" />s together as child and parent
+        /// </summary>
+        /// <param name="child"></param>
+        /// <param name="parent"></param>
+        public void Connect(Node child, Node parent)
+        {
+            child.SetParent(parent);
+            AddChild(child, parent);      
+        }
+
+        public void AddChild(Node child, Node parent)
+        {
+            var decorator = parent as DecoratorNode;
+            if (decorator)
+            {
+                decorator.Child = child;
+            }
+            var comp = parent as CompositeNode;
+            if (comp)
+            {
+                comp.Children.Add(child);
+            }
+            var root = parent as RootNode;
+            if (root)
+            {
+                root.Child = child;
+            }
+        }
+        public NodeState UpdateTree(float deltaTime)
+        {
+            if (_rootNode.State == NodeState.RUNNING)
+            {
+                return _rootNode.UpdateNode(deltaTime);
+            }
+
+            return _rootNode.State;
+        }
+
+        public NodeState State => _rootNode.State;
+
     }
 }

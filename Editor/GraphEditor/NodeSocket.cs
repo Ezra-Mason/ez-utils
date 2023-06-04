@@ -15,6 +15,7 @@ namespace ezutils.Editor
     public class NodeSocket : IGraphElement, ISelectable
     {
         private SocketType _type;
+        public GraphNode Node => _node;
         private GraphNode _node;
         private GUIStyle _style;
         public Rect Rect => _rect;

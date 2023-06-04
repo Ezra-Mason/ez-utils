@@ -1,15 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace ezutils.Runtime.BehaviourTree
-{
+{ 
     public enum NodeState
     {
         RUNNING = 0x00,
         SUCCESS = 0x02,
         FAILURE = 0x04
     }
+
+
 
     /// <summary>
     /// Base class for any node within the BehaviourTree
@@ -18,20 +21,24 @@ namespace ezutils.Runtime.BehaviourTree
     // I dont really want this to be an SO but it makes two things easier
     // - creating an instance from a type e.g. ScriptableObject.CreateInstance<T>()
     // - tracking nodes in a behaviour from the asset view
-
-    public abstract class Node : ScriptableObject
+    public abstract partial class Node : ScriptableObject
     {
+        public Vector2 GraphPosition { get => _graphPosition; set => _graphPosition = value; }
+
+        [SerializeField] protected Vector2 _graphPosition = new Vector2();
+
         public string NodeName { get; set; }
 
-        protected BehaviourTree _tree;
+        [SerializeField] protected BehaviourTree _tree;
         public NodeState State => _state;
-        protected NodeState _state;
+        [SerializeField] protected NodeState _state;
 
         public Node Parent => _parent;
-        protected Node _parent;
+        [SerializeField] protected Node _parent;
+        [SerializeField] protected string _name;
+        public abstract List<Node> Children { get; }
 
         protected bool _started = false;
-
         /// <summary>
         /// Set this node to be part of the given tree
         /// </summary>
@@ -47,13 +54,26 @@ namespace ezutils.Runtime.BehaviourTree
             return false;
         }
 
-        //this might need to be changed to a set child node 
+#if UNITY_EDITOR
         public virtual void SetParent(Node node)
         {
+            if (node == this)
+            {
+                Debug.LogError("Cannot parent a node to itself");
+                return;
+            }
+            if (node == null)
+            {
+                Debug.Log($"nulling parent node of node {this.name}");
+            }
+
             _parent = node;
+            _name = _parent.name;
+            AssetDatabase.Refresh();
+            EditorUtility.SetDirty(this);
+            AssetDatabase.SaveAssets();
         }
-
-
+#endif
         public virtual NodeState UpdateNode(float deltaTime)
         {
             // if this is the first tick, call the start method
@@ -86,5 +106,7 @@ namespace ezutils.Runtime.BehaviourTree
         /// Called on the nodes last update
         /// </summary>
         protected abstract void OnStop();
+
+
     }
 }

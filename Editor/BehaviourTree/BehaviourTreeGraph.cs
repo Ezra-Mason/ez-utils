@@ -1,9 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using ezutils.Runtime.BehaviourTree;
-using System;
 
 namespace ezutils.Editor
 {
@@ -11,6 +11,9 @@ namespace ezutils.Editor
     {
         private BehaviourTree _treeAsset;
         private Dictionary<GraphNode, Node> _nodeMap = new Dictionary<GraphNode, Node>();
+        private Dictionary<Node, GraphNode> _graphMap = new Dictionary<Node, GraphNode>();
+
+        private bool _initialised = false;
         public static void OpenWindow(BehaviourTree treeAsset)
         {
             BehaviourTreeGraph window = GetWindow<BehaviourTreeGraph>();
@@ -32,11 +35,19 @@ namespace ezutils.Editor
             _treeAsset = treeAsset;
             _nodes = new List<GraphNode>();
             PopulateTree();
+            _initialised = true;
         }
 
         protected override void OnGUI()
         {
             base.OnGUI();
+
+            if (!_initialised) return;
+
+            for (int i = 0; i < _nodes.Count; i++)
+            {
+                _treeAsset.EDITOR_Nodes[i].GraphPosition = _nodes[i].Rect.position;
+            }
         }
 
         private void PopulateTree()
@@ -44,16 +55,36 @@ namespace ezutils.Editor
             for (int i = 0; i < _treeAsset.EDITOR_Nodes.Count; i++)
             {
                 var node = _treeAsset.EDITOR_Nodes[i];
-                CreateNodeElement(node);
+                CreateNodeElement(node, node.GraphPosition);
             }
+
+            for (int i = 0; i < _nodes.Count; i++)
+            {
+                var child = _treeAsset.EDITOR_Nodes[i];
+                GraphNode c = _graphMap[child];
+
+                var parent = child.Parent;
+                if (parent == null) continue;
+
+                GraphNode p = _graphMap[parent];
+
+                ConnectNodes(c, p);
+            }
+
         }
 
         protected override void ShowContextMenu()
         {
             var menu = new GenericMenu();
+            if (_treeAsset.EDITOR_RootNode == null)
+            {
+                menu.AddSeparator("");
+                menu.AddItem(new GUIContent($"Root Node"), false, () => CreateNodeOfType(typeof(RootNode)));
+            }
+
             // composites
             menu.AddSeparator("");
-            menu.AddItem(new GUIContent($"Sequence"), false, () => CreateNodeOfType<SequenceComposite>());
+            menu.AddItem(new GUIContent($"Sequence"), false, () => CreateNodeOfType(typeof(SequenceComposite)));
 
             // decorators
             menu.AddSeparator("");
@@ -77,42 +108,77 @@ namespace ezutils.Editor
         public void CreateNodeOfType(Type type)
         {
             var node = _treeAsset.CreateNode(type);
-            CreateNodeElement(node);
+            CreateNodeElement(node, _mousePosition);
         }
-        private void CreateNodeOfType<T>() where T : Node
-        {
-            CreateNodeOfType(typeof(T));
-        }
-
 
         /// <summary>
         /// Create a <see cref="ezutils.Editor.GraphNode"/> representing the given <see cref="ezutils.Runtime.BehaviourTree.Node"/>
         /// </summary>
         /// <param name="node">The node to be visualised</param>
-        private void CreateNodeElement(Node node)
+        private void CreateNodeElement(Node node, Vector2 position)
         {
-            var pos = _mousePosition;
-            if (_treeAsset.EDITOR_NodePositions.ContainsKey(node))
-            {
-                pos = _treeAsset.EDITOR_NodePositions[node];
-            }
 
-            var graphNode = new BTGraphNode(
-                pos,
-                _inSocketStyle,
-                _outSocketStyle,
-                OnClickInSocket,
-                OnClickOutSocket,
-                OnClickRemove);
+            var comp = node as CompositeNode;
+            BTGraphNode graphNode;
+            if (comp)
+            {
+                graphNode = new CompositeGraphNode(
+                    position,
+                    _inSocketStyle,
+                    _outSocketStyle,
+                    OnClickInSocket,
+                    OnClickOutSocket,
+                    OnClickRemove);
+            }
+            else
+            {
+
+                graphNode = new BTGraphNode(
+                    position,
+                    _inSocketStyle,
+                    _outSocketStyle,
+                    OnClickInSocket,
+                    OnClickOutSocket,
+                    OnClickRemove);
+            }
             _nodes.Add(graphNode);
             _nodeMap[graphNode] = node;
-            _treeAsset.EDITOR_NodePositions[node] = pos;
+            _graphMap[node] = graphNode;
         }
 
         protected override void OnClickRemove(GraphNode node)
         {
             base.OnClickRemove(node);
             _treeAsset.DeleteNode(_nodeMap[node]);
+        }
+        protected override void ConnectSelection()
+        {
+            base.ConnectSelection();
+            var inNode = _nodeMap[_selectedInSocket.Node];
+            var outNode = _nodeMap[_selectedOutSocket.Node];
+            Debug.Log($"in node {inNode} setting its parent to {outNode}");
+            _treeAsset.Parent(inNode, outNode);
+        }
+
+        protected void ConnectNodes(GraphNode inNode, GraphNode outNode)
+        {
+            if (_connections == null)
+            {
+                _connections = new List<NodeConnection>();
+            }
+            var insoc = inNode.InSocket;
+            var outsoc = outNode.OutSocket;
+            _connections.Add(
+                new NodeConnection(insoc, outsoc, OnClickConnection)
+                );
+        }
+
+        protected override void OnClickConnection(NodeConnection connection)
+        {
+            Node node = _nodeMap[connection.In.Node];
+            _treeAsset.Parent(node, null);
+            Debug.Log("clicked connection");
+            base.OnClickConnection(connection);
         }
 
 
@@ -121,8 +187,8 @@ namespace ezutils.Editor
             //save the positions of the nodes when closing the graph window
             for (int i = 0; i < _nodes.Count; i++)
             {
-                Node n = _nodeMap[_nodes[i]];
-                _treeAsset.EDITOR_NodePositions[n] = _nodes[i].Rect.position;
+                _treeAsset.EDITOR_Nodes[i].GraphPosition = _nodes[i].Rect.position;
+
             }
         }
     }

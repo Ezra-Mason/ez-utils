@@ -15,7 +15,7 @@ namespace ezutils.Editor
         protected GenericMenu _addNodeMenu;
 
         //connections
-        protected List<NodeConnection> _connections;
+        protected List<NodeConnection> _connections = new List<NodeConnection>();
         protected GUIStyle _inSocketStyle;
         protected GUIStyle _outSocketStyle;
         protected NodeSocket _selectedInSocket;
@@ -185,12 +185,12 @@ namespace ezutils.Editor
             if (_selectedOutSocket == null) return;
             if (_selectedOutSocket != _selectedInSocket)
             {
-                Debug.Log("connected from in node");
+                Debug.Log($"connected {_selectedOutSocket.Node}in to {_selectedInSocket.Node} ");
                 ConnectSelection();
             }
             DeselectSockets();
         }
-        protected void OnClickOutSocket(NodeSocket socket)
+        protected virtual void OnClickOutSocket(NodeSocket socket)
         {
             _selectedOutSocket = socket;
             socket.Select();
@@ -204,7 +204,7 @@ namespace ezutils.Editor
 
             DeselectSockets();
         }
-        protected void OnClickConnection(NodeConnection connection)
+        protected virtual void OnClickConnection(NodeConnection connection)
         {
             _connections.Remove(connection);
         }
@@ -233,7 +233,7 @@ namespace ezutils.Editor
         /// <summary>
         /// Create a connection between the selected sockets
         /// </summary>
-        protected void ConnectSelection()
+        protected virtual void ConnectSelection()
         {
             if (_connections == null)
             {
@@ -243,7 +243,7 @@ namespace ezutils.Editor
             _connections.Add(
                 new NodeConnection(_selectedInSocket, _selectedOutSocket, OnClickConnection)
                 );
-            Debug.Log("connected node");
+            Debug.Log($"created connection from {_selectedOutSocket.Node} to {_selectedInSocket.Node} node");
 
         }
         /// <summary>

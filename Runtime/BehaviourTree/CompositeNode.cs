@@ -6,19 +6,19 @@ namespace ezutils.Runtime.BehaviourTree
 {
     public abstract class CompositeNode : Node
     {
-        public List<Node> Children 
+        public override List<Node> Children 
         { 
             get => _children;
-            set
+/*            protected set
             {
                 _children = value;
                 foreach(var child in _children)
                 {
                     child.SetParent(this);
                 }
-            }
+            }*/
         }
 
-        protected List<Node> _children = new List<Node>();
+        [SerializeField] protected List<Node> _children = new List<Node>();
     }
 }
