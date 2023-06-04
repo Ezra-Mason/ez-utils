@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.Callbacks;
 using ezutils.Runtime.BehaviourTree;
 
 namespace ezutils.Editor
@@ -12,8 +13,18 @@ namespace ezutils.Editor
         private BehaviourTree _treeAsset;
         private Dictionary<GraphNode, Node> _nodeMap = new Dictionary<GraphNode, Node>();
         private Dictionary<Node, GraphNode> _graphMap = new Dictionary<Node, GraphNode>();
-
         private bool _initialised = false;
+
+        [OnOpenAsset]
+        public static bool OnOpenAsset(int instanceId, int line)
+        {
+            if (Selection.activeObject is BehaviourTree)
+            {
+                BehaviourTreeGraph.OpenWindow(Selection.activeObject as BehaviourTree);
+                return true;
+            }
+            return false;
+        }
         public static void OpenWindow(BehaviourTree treeAsset)
         {
             BehaviourTreeGraph window = GetWindow<BehaviourTreeGraph>();
@@ -34,6 +45,7 @@ namespace ezutils.Editor
         {
             _treeAsset = treeAsset;
             _nodes = new List<GraphNode>();
+
             PopulateTree();
             _initialised = true;
         }
@@ -52,6 +64,12 @@ namespace ezutils.Editor
 
         private void PopulateTree()
         {
+            if (_treeAsset.EDITOR_RootNode == null)
+            {
+                var root = _treeAsset.CreateNode(typeof(RootNode));
+                _treeAsset.SetRootNode(root);
+            }
+
             for (int i = 0; i < _treeAsset.EDITOR_Nodes.Count; i++)
             {
                 var node = _treeAsset.EDITOR_Nodes[i];

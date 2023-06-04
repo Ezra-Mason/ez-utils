@@ -28,11 +28,6 @@ namespace ezutils.Runtime.BehaviourTree
             
             _nodes.Add(node);
 
-            var root = node as RootNode;
-            if (root)
-            {
-                SetRootNode(node);
-            }
             AssetDatabase.AddObjectToAsset(node, this);
             AssetDatabase.SaveAssets();
             return node;
@@ -48,6 +43,16 @@ namespace ezutils.Runtime.BehaviourTree
             AssetDatabase.RemoveObjectFromAsset(node);
             AssetDatabase.SaveAssets();
         }
+
+        public bool SetRootNode(Node node)
+        {
+            if (_rootNode != null) return false;
+
+            _rootNode = node;
+            EditorUtility.SetDirty(this);
+            AssetDatabase.SaveAssets();
+            return true;
+        }
     }
 
 #endif
@@ -57,22 +62,8 @@ namespace ezutils.Runtime.BehaviourTree
 
         [SerializeField] private Node _rootNode;
         [SerializeField] private List<Node> _nodes = new List<Node>();
-        private void OnEnable()
-        {
-            if (!_rootNode)
-            {
-/*#if UNITY_EDITOR
-                _rootNode = CreateNode(typeof(RootNode));
-#endif*/
-            }
-        }
-        public bool SetRootNode(Node node)
-        {
-            if (_rootNode != null) return false;
-
-            _rootNode = node;
-            return true;
-        }
+        
+        public NodeState State => _rootNode.State;
 
         /// <summary>
         /// Link two <see cref="ezutils.Runtime.BehaviourTree.Node" />s together as child and parent
@@ -85,7 +76,7 @@ namespace ezutils.Runtime.BehaviourTree
             AddChild(child, parent);      
         }
 
-        public void AddChild(Node child, Node parent)
+        private void AddChild(Node child, Node parent)
         {
             var decorator = parent as DecoratorNode;
             if (decorator)
@@ -103,17 +94,14 @@ namespace ezutils.Runtime.BehaviourTree
                 root.Child = child;
             }
         }
+
         public NodeState UpdateTree(float deltaTime)
         {
             if (_rootNode.State == NodeState.RUNNING)
             {
                 return _rootNode.UpdateNode(deltaTime);
             }
-
             return _rootNode.State;
         }
-
-        public NodeState State => _rootNode.State;
-
     }
 }
