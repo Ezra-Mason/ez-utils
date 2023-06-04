@@ -157,7 +157,7 @@ namespace ezutils.Editor
             var inNode = _nodeMap[_selectedInSocket.Node];
             var outNode = _nodeMap[_selectedOutSocket.Node];
             Debug.Log($"in node {inNode} setting its parent to {outNode}");
-            _treeAsset.Parent(inNode, outNode);
+            _treeAsset.Connect(inNode, outNode);
         }
 
         protected void ConnectNodes(GraphNode inNode, GraphNode outNode)
@@ -176,7 +176,7 @@ namespace ezutils.Editor
         protected override void OnClickConnection(NodeConnection connection)
         {
             Node node = _nodeMap[connection.In.Node];
-            _treeAsset.Parent(node, null);
+            _treeAsset.Connect(node, null);
             Debug.Log("clicked connection");
             base.OnClickConnection(connection);
         }
