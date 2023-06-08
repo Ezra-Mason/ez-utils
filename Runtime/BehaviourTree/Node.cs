@@ -4,15 +4,13 @@ using UnityEditor;
 using UnityEngine;
 
 namespace ezutils.Runtime.BehaviourTree
-{ 
+{
     public enum NodeState
     {
         RUNNING = 0x00,
         SUCCESS = 0x02,
         FAILURE = 0x04
     }
-
-
 
     /// <summary>
     /// Base class for any node within the BehaviourTree
@@ -21,7 +19,7 @@ namespace ezutils.Runtime.BehaviourTree
     // I dont really want this to be an SO but it makes two things easier
     // - creating an instance from a type e.g. ScriptableObject.CreateInstance<T>()
     // - tracking nodes in a behaviour from the asset view
-    public abstract partial class Node : ScriptableObject
+    public abstract class Node : ScriptableObject
     {
         public Vector2 GraphPosition { get => _graphPosition; set => _graphPosition = value; }
 
@@ -35,7 +33,6 @@ namespace ezutils.Runtime.BehaviourTree
 
         public Node Parent => _parent;
         [SerializeField] protected Node _parent;
-        [SerializeField] protected string _name;
         public abstract List<Node> Children { get; }
 
         protected bool _started = false;
@@ -55,6 +52,13 @@ namespace ezutils.Runtime.BehaviourTree
         }
 
 #if UNITY_EDITOR
+        public void Save()
+        {
+            AssetDatabase.Refresh();
+            EditorUtility.SetDirty(this);
+            AssetDatabase.SaveAssets();
+        }
+
         public virtual void SetParent(Node node)
         {
             if (node == this)
@@ -68,10 +72,7 @@ namespace ezutils.Runtime.BehaviourTree
             }
 
             _parent = node;
-            _name = _parent.name;
-            AssetDatabase.Refresh();
-            EditorUtility.SetDirty(this);
-            AssetDatabase.SaveAssets();
+            Save();
         }
 #endif
         public virtual NodeState UpdateNode(float deltaTime)

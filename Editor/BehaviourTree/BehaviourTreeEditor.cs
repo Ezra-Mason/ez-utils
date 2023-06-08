@@ -11,13 +11,13 @@ namespace ezutils.Editor
         public override void OnInspectorGUI()
         {
             BehaviourTree tree = (BehaviourTree)target;
-            base.OnInspectorGUI();
-
-
             if (GUILayout.Button("Edit Tree"))
             {
                 BehaviourTreeGraph.OpenWindow(tree);
             }
+
+            base.OnInspectorGUI();
+
         }
     }
 }

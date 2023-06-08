@@ -33,15 +33,6 @@ namespace ezutils.Editor
         {
             _isDirectional = true;
 
-            _inSocketStyle = new GUIStyle();
-            _inSocketStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn left.png") as Texture2D;
-            _inSocketStyle.active.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn left on.png") as Texture2D;
-            _inSocketStyle.border = new RectOffset(4, 4, 12, 12);
-
-            _outSocketStyle = new GUIStyle();
-            _outSocketStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn right.png") as Texture2D;
-            _outSocketStyle.active.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn right on.png") as Texture2D;
-            _outSocketStyle.border = new RectOffset(4, 4, 12, 12);
 
             _addNodeMenu = new GenericMenu();
             _addNodeMenu.AddItem(new GUIContent("Add Node"), false, () => OnClickAddNode(_mousePosition));
@@ -166,14 +157,12 @@ namespace ezutils.Editor
 
             _nodes.Add(
                 new GraphNode(
-                    mousePosition,
-                    _inSocketStyle,
-                    _outSocketStyle,
                     OnClickInSocket,
                     OnClickOutSocket,
                     OnClickRemove
                     )
                 );
+            _nodes[_nodes.Count - 1].Move(mousePosition);
         }
 
         #region Connections
@@ -206,7 +195,10 @@ namespace ezutils.Editor
         }
         protected virtual void OnClickConnection(NodeConnection connection)
         {
+            connection.In.Disconnect();
+            connection.Out.Disconnect();
             _connections.Remove(connection);
+
         }
         #endregion
 
@@ -243,6 +235,8 @@ namespace ezutils.Editor
             _connections.Add(
                 new NodeConnection(_selectedInSocket, _selectedOutSocket, OnClickConnection)
                 );
+            _selectedInSocket.Connect();
+            _selectedOutSocket.Connect();
             Debug.Log($"created connection from {_selectedOutSocket.Node} to {_selectedInSocket.Node} node");
 
         }

@@ -53,6 +53,14 @@ namespace ezutils.Runtime.BehaviourTree
             AssetDatabase.SaveAssets();
             return true;
         }
+
+        public void Save()
+        {
+            for (int i = 0; i < _nodes.Count; i++)
+            {
+                _nodes[i].Save();
+            }
+        }
     }
 
 #endif

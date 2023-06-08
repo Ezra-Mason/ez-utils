@@ -8,9 +8,9 @@ namespace ezutils.Editor
 
     public class CompositeGraphNode : BTGraphNode
     {
-        public CompositeGraphNode(Vector2 position, GUIStyle inStyle, GUIStyle outStyle, Action<NodeSocket> onClickIn, Action<NodeSocket> onClickOut, Action<GraphNode> onClickRemove) : base(position, inStyle, outStyle, onClickIn, onClickOut, onClickRemove)
+        public CompositeGraphNode(Action<NodeSocket> onClickIn, Action<NodeSocket> onClickOut, Action<GraphNode> onClickRemove) : base(onClickIn, onClickOut, onClickRemove)
         {
-            _nodeType = "Composite Node";
+            _nodeType = "Composite";
         }
     }
 

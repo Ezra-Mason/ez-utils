@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
+using ezutils.Runtime;
 using ezutils.Runtime.BehaviourTree;
 
 namespace ezutils.Editor
@@ -14,7 +15,8 @@ namespace ezutils.Editor
         private Dictionary<GraphNode, Node> _nodeMap = new Dictionary<GraphNode, Node>();
         private Dictionary<Node, GraphNode> _graphMap = new Dictionary<Node, GraphNode>();
         private bool _initialised = false;
-
+        private Dictionary<Type, StackPool<IGraphNode>> _typeGraphNodeMap = new Dictionary<Type, StackPool<IGraphNode>>();
+        private StackPool<BTGraphNode> _nodePool;
         [OnOpenAsset]
         public static bool OnOpenAsset(int instanceId, int line)
         {
@@ -45,11 +47,24 @@ namespace ezutils.Editor
         {
             _treeAsset = treeAsset;
             _nodes = new List<GraphNode>();
-
+            _typeGraphNodeMap[typeof(RootNode)] = new StackPool<IGraphNode>(() => new RootGraphNode(OnClickInSocket, OnClickOutSocket, OnClickRemove), OnGetNode, OnPutNode, 10);
+            _typeGraphNodeMap[typeof(DecoratorNode)] = new StackPool<IGraphNode>(() => new DecoratorGraphNode(OnClickInSocket, OnClickOutSocket, OnClickRemove), OnGetNode, OnPutNode, 10);
+            _typeGraphNodeMap[typeof(SequenceComposite)] = new StackPool<IGraphNode>(() => new SequenceGraphNode(OnClickInSocket, OnClickOutSocket, OnClickRemove), OnGetNode, OnPutNode, 10);
+            _typeGraphNodeMap[typeof(TaskNode)] = new StackPool<IGraphNode>(() => new TaskGraphNode(OnClickInSocket, OnClickOutSocket, OnClickRemove), OnGetNode, OnPutNode, 10);
+            _nodePool = new StackPool<BTGraphNode>(() => new BTGraphNode(OnClickInSocket, OnClickOutSocket, OnClickRemove), OnGetNode, OnPutNode, 10);
             PopulateTree();
             _initialised = true;
         }
-
+        private void OnGetNode(IGraphNode node)
+        {
+            //Debug.Log("Got node from pool");
+            //_nodes.Add(node as GraphNode);
+        }
+        private void OnPutNode(IGraphNode node)
+        {
+            //Debug.Log("put Node in pool");
+            //_nodes.Remove(node as GraphNode);
+        }
         protected override void OnGUI()
         {
             base.OnGUI();
@@ -136,32 +151,41 @@ namespace ezutils.Editor
         private void CreateNodeElement(Node node, Vector2 position)
         {
 
-            var comp = node as CompositeNode;
             BTGraphNode graphNode;
-            if (comp)
+            if (node as RootNode)
             {
-                graphNode = new CompositeGraphNode(
-                    position,
-                    _inSocketStyle,
-                    _outSocketStyle,
-                    OnClickInSocket,
-                    OnClickOutSocket,
-                    OnClickRemove);
+                graphNode = _typeGraphNodeMap[typeof(RootNode)].Get() as RootGraphNode;
+            }
+            else if (node as SequenceComposite)
+            {
+                graphNode = _typeGraphNodeMap[typeof(SequenceComposite)].Get() as SequenceGraphNode;
+            }
+            else if (node as DecoratorNode)
+            {
+                graphNode = _typeGraphNodeMap[typeof(DecoratorNode)].Get() as DecoratorGraphNode;
+            }
+            else if (node as TaskNode)
+            {
+                graphNode = _typeGraphNodeMap[typeof(TaskNode)].Get() as TaskGraphNode;
             }
             else
             {
-
-                graphNode = new BTGraphNode(
-                    position,
-                    _inSocketStyle,
-                    _outSocketStyle,
-                    OnClickInSocket,
-                    OnClickOutSocket,
-                    OnClickRemove);
+                Debug.LogError("Couldnt find valid graphNode to represent node");
+                return;
             }
-            _nodes.Add(graphNode);
-            _nodeMap[graphNode] = node;
-            _graphMap[node] = graphNode;
+            if (graphNode != null)
+            {
+
+                graphNode.Header = ObjectNames.NicifyVariableName(node.name);
+                graphNode.Move(position);
+                _nodes.Add(graphNode);
+                _nodeMap[graphNode] = node;
+                _graphMap[node] = graphNode;
+            }
+            else
+            {
+                Debug.LogError($"graph node is null {node.name}");
+            }
         }
 
         protected override void OnClickRemove(GraphNode node)
@@ -189,6 +213,8 @@ namespace ezutils.Editor
             _connections.Add(
                 new NodeConnection(insoc, outsoc, OnClickConnection)
                 );
+            insoc.Connect();
+            outsoc.Connect();
         }
 
         protected override void OnClickConnection(NodeConnection connection)
@@ -202,12 +228,7 @@ namespace ezutils.Editor
 
         public void OnDisable()
         {
-            //save the positions of the nodes when closing the graph window
-            for (int i = 0; i < _nodes.Count; i++)
-            {
-                _treeAsset.EDITOR_Nodes[i].GraphPosition = _nodes[i].Rect.position;
-
-            }
+            _treeAsset.Save();
         }
     }
 }
