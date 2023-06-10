@@ -45,8 +45,7 @@ namespace ezutils.Editor
         {
             GUI.Box(_rect, "", _activeStyle);
 
-            GUILayout.Label(Header, EditorStyles.largeLabel);
-            GUILayout.EndArea();
+            GUI.Label(_rect, Header, EditorStyles.largeLabel);
 
             InSocket?.DrawElement();
             OutSocket?.DrawElement();
