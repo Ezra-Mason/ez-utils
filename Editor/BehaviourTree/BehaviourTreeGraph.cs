@@ -196,8 +196,8 @@ namespace ezutils.Editor
         protected override void ConnectSelection()
         {
             base.ConnectSelection();
-            var inNode = _nodeMap[_selectedInSocket.Node];
-            var outNode = _nodeMap[_selectedOutSocket.Node];
+            var inNode = _nodeMap[_selectedTargetSocket.Node];
+            var outNode = _nodeMap[_selectedSourceSocket.Node];
             Debug.Log($"in node {inNode} setting its parent to {outNode}");
             _treeAsset.Connect(inNode, outNode);
         }

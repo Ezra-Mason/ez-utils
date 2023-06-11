@@ -17,12 +17,17 @@ namespace ezutils.Editor
     /// </summary>
     public class NodeSocket : IGraphElement, ISelectable
     {
+        public string Title { get => _type.ToString(); set => Title = value; }
         private SocketType _type;
         public GraphNode Node => _node;
         private GraphNode _node;
+        public GUIStyle Style => _style;
         private GUIStyle _style;
-        private GUIStyle _connectedStyle;
-        public Rect Rect => _rect;
+
+        public Rect Rect { get => _rect; set => _rect = value; }
+
+        public bool AllowStartConnection { get; set; }
+        public bool AllowEndConnection { get; set; }
 
         public bool IsSelected { get; private set; }
         public bool IsConnected { get; private set; }
@@ -32,29 +37,13 @@ namespace ezutils.Editor
         public NodeSocket(SocketType type, GraphNode node, Action<NodeSocket> onClicked)
         {
             _type = type;
+
             _node = node;
-            _style = new GUIStyle
-            {
-                normal =
-            {
-                background = EditorGUIUtility.Load("builtin skins/darkskin/images/radio.png") as Texture2D,
-            },
-                active =
-            {
-                background = EditorGUIUtility.Load("builtin skins/darkskin/images/radio focus.png") as Texture2D
-            }
-            };
-            _connectedStyle = new GUIStyle
-            {
-                normal =
-            {
-                background = EditorGUIUtility.Load("builtin skins/darkskin/images/radio on.png") as Texture2D,
-            },
-                active =
-            {
-                background = EditorGUIUtility.Load("builtin skins/darkskin/images/radio on focus.png") as Texture2D
-            }
-            };
+            _style = new GUIStyle();
+            _style.alignment = _type == SocketType.IN ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
+            _style.clipping = TextClipping.Overflow;
+            //_style.contentOffset = new Vector2(-12f, 0f);
+
             _onClicked = onClicked;
             IsConnected = false;
             _rect = new Rect(0f, 0f, 14f, 14f);
@@ -78,12 +67,14 @@ namespace ezutils.Editor
                 default:
                     break;
             }
-            var clicked = GUI.Button(_rect, "", IsConnected ? _connectedStyle : _style);
 
-            if (clicked && _onClicked != null)
-            {
-                _onClicked(this);
-            }
+            //GUILayout.Box("", IsConnected ? _connectedStyle : _style);
+            //var clicked = GUI.Button(_rect, "", IsConnected ? _connectedStyle : _style);
+
+            //if (clicked && _onClicked != null)
+            //{
+            //    _onClicked(this);
+            //}
         }
 
         public void Connect()

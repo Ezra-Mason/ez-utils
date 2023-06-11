@@ -13,13 +13,12 @@ namespace ezutils.Editor
 
         protected List<GraphNode> _nodes;
         protected GenericMenu _addNodeMenu;
-
         //connections
         protected List<NodeConnection> _connections = new List<NodeConnection>();
         protected GUIStyle _inSocketStyle;
         protected GUIStyle _outSocketStyle;
-        protected NodeSocket _selectedInSocket;
-        protected NodeSocket _selectedOutSocket;
+        protected NodeSocket _selectedSourceSocket;
+        protected NodeSocket _selectedTargetSocket;
         protected bool _isDirectional = false;
 
         [MenuItem("ez-utils/Graph Editor")]
@@ -45,13 +44,20 @@ namespace ezutils.Editor
         {
             DrawGrid(20, 0.2f, Color.gray);
             DrawGrid(100, 0.4f, Color.gray);
-            DrawConnections();
-            DrawNodes();
 
-            ProcessNodeEvents();
+            DrawNodes();
+            DrawConnections();
+            DrawDraggedConnection();
+
+            GUILayout.Label(new GUIContent($" source: {_selectedSourceSocket?.Node.Header}, target: {_selectedTargetSocket?.Node.Header}"));
+            //Context menu GUI
+
+            // should remove
+            //ProcessNodeEvents();
+
             ProcessEvents();
 
-            if (GUI.changed) Repaint();
+            //if (GUI.changed) Repaint();
         }
         private void DrawGrid(float spacing, float opacity, Color color)
         {
@@ -80,27 +86,190 @@ namespace ezutils.Editor
             }
             Handles.EndGUI();
         }
-        private void DrawConnections()
+        /// <summary>
+        /// Draw the windows for all the nodes in the graph
+        /// </summary>
+        protected void DrawNodes()
         {
-            if (_connections == null) return;
-            if (_connections.Count == 0) return;
-
-            for (int i = 0; i < _connections.Count; i++)
-            {
-                _connections[i].DrawElement();
-            }
-        }
-
-        private void DrawNodes()
-        {
-            if (_nodes == null) return;
-            if (_nodes.Count == 0) return;
-
+            BeginWindows();
             for (int i = 0; i < _nodes.Count; i++)
             {
-                _nodes[i].DrawElement();
+                var node = _nodes[i];
+                node.Rect = GUILayout.Window(
+                    i,
+                    node.Rect,
+                    delegate
+                    {
+                        OnNodeGUI(node);
+                    },
+                    node.Header,
+                    node.Style
+                    //,GUILayout.Width(0f), GUILayout.Height(0f)
+                    );
+            }
+            EndWindows();
+        }
+
+        /// <summary>
+        /// Draw the GUI content of the given <see cref="GraphNode"/> window
+        /// </summary>
+        /// <param name="node"></param>
+        protected virtual void OnNodeGUI(GraphNode node)
+        {
+            if (node.InSocket != null)
+            {
+                LayoutSocket(node.InSocket);
+            }
+
+            GUILayout.Label("node body");
+
+            if (node.OutSocket != null)
+            {
+                LayoutSocket(node.OutSocket);
+            }
+            //drag nodes
+            GUI.DragWindow();
+        }
+
+        /// <summary>
+        /// Layout the GUI for the given <see cref="NodeSocket"/>
+        /// </summary>
+        /// <param name="socket"></param>
+        private void LayoutSocket(NodeSocket socket)
+        {
+            int id = GUIUtility.GetControlID(FocusType.Passive);
+            var label = new GUIContent(socket.Title);
+            Rect rect = GUILayoutUtility.GetRect(label, socket.Style);//, GUILayout.Width(socket.Rect.width), GUILayout.Height(socket.Rect.height));
+            if (Event.current.type != EventType.Layout && Event.current.type != EventType.Used)
+            {
+                bool clickedSocket = rect.Contains(Event.current.mousePosition)
+                                    && Event.current.button == 0;
+
+                switch (Event.current.GetTypeForControl(id))
+                {
+                    // begin dragging on a socket
+                    case EventType.MouseDown:
+                        if (clickedSocket)
+                        {
+                            Debug.Log("clicked on socket");
+
+                            if (true)
+                            {
+                                _selectedSourceSocket = socket;
+                            }
+                            Event.current.Use();
+                        }
+                        break;
+                    case EventType.MouseUp:
+                        if (clickedSocket)
+                        {
+                            //end drag
+                            if (_selectedTargetSocket == socket)
+                            {
+                                ConnectSelection();
+                                _selectedTargetSocket = (_selectedSourceSocket = null);
+                            }
+                            Event.current.Use();
+                        }
+                        break;
+                    case EventType.MouseDrag:
+                        //drag 
+                        if (clickedSocket)
+                        {
+                            if (_selectedSourceSocket == null || _selectedSourceSocket == socket) return;
+
+                            _selectedTargetSocket = socket;
+                            Event.current.Use();
+                        }
+                        break;
+                    case EventType.Repaint:
+                        socket.Style.Draw(rect, label, id, false);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
+
+        private void DrawConnections()
+        {
+            if (Event.current.type == EventType.Repaint)
+            {
+                if (_connections == null) return;
+                if (_connections.Count == 0) return;
+
+                for (int i = 0; i < _connections.Count; i++)
+                {
+                    DrawConnection(_connections[i]);
+                }
+            }
+        }
+
+        private void DrawConnection(NodeConnection connection)
+        {
+            if (Event.current.type == EventType.Repaint)
+            {
+                var start = new Vector2(connection.Out.Node.Rect.xMax, connection.Out.Node.Rect.y + connection.Out.Rect.y + 9f);
+                var end = new Vector2(connection.In.Node.Rect.x, connection.In.Node.Rect.y + connection.In.Rect.y + 9f);
+
+                Handles.DrawBezier(
+                    start,
+                    end,
+                    start - Vector2.left * 10f,
+                    end + Vector2.left * 10f,
+                    Color.white,
+                    null,
+                    2f);
+            }
+
+            if (_selectedSourceSocket != null && Event.current.type == EventType.MouseUp)
+            {
+
+                _selectedSourceSocket = (_selectedTargetSocket = null);
+                Event.current.Use();
+            }
+/*            if (Event.current.type == EventType.MouseUp)
+            {
+                _selectedTargetSocket = (_selectedSourceSocket = null);
+                Event.current.Use();
+            }*/
+        }
+
+        private void DrawDraggedConnection()
+        {
+            if (_selectedSourceSocket == null) return;
+
+            switch (Event.current.GetTypeForControl(0))
+            {
+                case EventType.Repaint:
+                    var rect = _selectedSourceSocket.Rect;
+                    rect.position += _selectedSourceSocket.Node.Rect.position;
+                    var end = Event.current.mousePosition;
+
+                    if (_selectedTargetSocket != null)
+                    {
+                        var rect2 = _selectedTargetSocket.Rect;
+                        rect2.position += _selectedTargetSocket.Node.Rect.position;
+                        end = new Vector2(rect2.x, rect2.y + 9f);
+                    }
+
+                    var start = new Vector2(rect.xMax, rect.y + 9f);
+                    Handles.DrawBezier(
+                        start,
+                        end,
+                        start - Vector2.left * 10f,
+                        end + Vector2.left * 10f,
+                        Color.white,
+                        null,
+                        2f);
+                    break;
+                case EventType.MouseDrag:
+                    _selectedTargetSocket = null;
+                    Event.current.Use();
+                    break;
+            }
+        }
+
         private void ProcessEvents()
         {
             _mousePosition = Event.current.mousePosition;
@@ -112,9 +281,16 @@ namespace ezutils.Editor
                     {
                         ShowContextMenu();
                     }
-                    if (Event.current.button == 0 && _selectedOutSocket != null)
+                    if (Event.current.button == 0 && _selectedSourceSocket != null)
                     {
                         DeselectSockets();
+                    }
+                    break;
+                case EventType.MouseUp:
+                    if (Event.current.button == 0 && _selectedSourceSocket != null)
+                    {
+                        DeselectSockets();
+                        Event.current.Use();
                     }
                     break;
                 case EventType.MouseDrag:
@@ -168,24 +344,24 @@ namespace ezutils.Editor
         #region Connections
         protected void OnClickInSocket(NodeSocket socket)
         {
-            _selectedInSocket = socket;
-            socket.Select();
-            Debug.Log("selected in node");
-            if (_selectedOutSocket == null) return;
-            if (_selectedOutSocket != _selectedInSocket)
-            {
-                Debug.Log($"connected {_selectedOutSocket.Node}in to {_selectedInSocket.Node} ");
-                ConnectSelection();
-            }
-            DeselectSockets();
+            /*            //_selectedTargetSocket = socket;
+                        socket.Select();
+                        Debug.Log("selected in node");
+                        if (_selectedSourceSocket == null) return;
+                        if (_selectedSourceSocket != _selectedTargetSocket)
+                        {
+                            Debug.Log($"connected {_selectedSourceSocket.Node}in to {_selectedTargetSocket.Node} ");
+                            ConnectSelection();
+                        }
+                        DeselectSockets();*/
         }
         protected virtual void OnClickOutSocket(NodeSocket socket)
         {
-            _selectedOutSocket = socket;
+            _selectedSourceSocket = socket;
             socket.Select();
             Debug.Log("selected out node");
-            if (_selectedInSocket == null) return;
-            if (_selectedOutSocket != _selectedInSocket && !_isDirectional)
+            if (_selectedTargetSocket == null) return;
+            if (_selectedSourceSocket != _selectedTargetSocket && !_isDirectional)
             {
                 ConnectSelection();
                 Debug.Log("connected from out node");
@@ -233,11 +409,11 @@ namespace ezutils.Editor
             }
 
             _connections.Add(
-                new NodeConnection(_selectedInSocket, _selectedOutSocket, OnClickConnection)
+                new NodeConnection(_selectedTargetSocket, _selectedSourceSocket, OnClickConnection)
                 );
-            _selectedInSocket.Connect();
-            _selectedOutSocket.Connect();
-            Debug.Log($"created connection from {_selectedOutSocket.Node} to {_selectedInSocket.Node} node");
+            _selectedTargetSocket.Connect();
+            _selectedSourceSocket.Connect();
+            Debug.Log($"created connection from {_selectedSourceSocket.Node} to {_selectedTargetSocket.Node} node");
 
         }
         /// <summary>
@@ -245,10 +421,10 @@ namespace ezutils.Editor
         /// </summary>
         protected void DeselectSockets()
         {
-            _selectedInSocket?.Deselct();
-            _selectedOutSocket?.Deselct();
-            _selectedInSocket = null;
-            _selectedOutSocket = null;
+            _selectedTargetSocket?.Deselct();
+            _selectedSourceSocket?.Deselct();
+            _selectedTargetSocket = null;
+            _selectedSourceSocket = null;
         }
         protected void OnDrag(Vector2 delta)
         {
