@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.Graphs;
+using UnityEngine.UIElements;
 
 namespace ezutils.Editor
 {
@@ -138,10 +140,16 @@ namespace ezutils.Editor
         private void LayoutSocket(NodeSocket socket)
         {
             int id = GUIUtility.GetControlID(FocusType.Passive);
+
+            var style = socket.Type == SocketType.IN ? Styles.PinIn : Styles.PinOut;
+
             var label = new GUIContent(socket.Title);
-            Rect rect = GUILayoutUtility.GetRect(label, socket.Style);//, GUILayout.Width(socket.Rect.width), GUILayout.Height(socket.Rect.height));
+            Rect rect = GUILayoutUtility.GetRect(label, style);
+
             if (Event.current.type != EventType.Layout && Event.current.type != EventType.Used)
             {
+                socket.Rect = rect;
+
                 bool clickedSocket = rect.Contains(Event.current.mousePosition)
                                     && Event.current.button == 0;
 
@@ -183,7 +191,7 @@ namespace ezutils.Editor
                         }
                         break;
                     case EventType.Repaint:
-                        socket.Style.Draw(rect, label, id, false);
+                        style.Draw(rect, label, id, socket.IsConnected);
                         break;
                     default:
                         break;
@@ -228,11 +236,6 @@ namespace ezutils.Editor
                 _selectedSourceSocket = (_selectedTargetSocket = null);
                 Event.current.Use();
             }
-/*            if (Event.current.type == EventType.MouseUp)
-            {
-                _selectedTargetSocket = (_selectedSourceSocket = null);
-                Event.current.Use();
-            }*/
         }
 
         private void DrawDraggedConnection()
@@ -253,7 +256,10 @@ namespace ezutils.Editor
                         end = new Vector2(rect2.x, rect2.y + 9f);
                     }
 
-                    var start = new Vector2(rect.xMax, rect.y + 9f);
+                    var start = new Vector2(
+                                _selectedSourceSocket.Type == SocketType.OUT ? rect.xMax : rect.x,
+                                rect.y + 9f);
+
                     Handles.DrawBezier(
                         start,
                         end,

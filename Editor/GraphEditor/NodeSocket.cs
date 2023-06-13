@@ -18,6 +18,7 @@ namespace ezutils.Editor
     public class NodeSocket : IGraphElement, ISelectable
     {
         public string Title { get => _type.ToString(); set => Title = value; }
+        public SocketType Type => _type;
         private SocketType _type;
         public GraphNode Node => _node;
         private GraphNode _node;
