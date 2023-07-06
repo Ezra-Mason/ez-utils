@@ -15,7 +15,7 @@ namespace ezutils.Editor
     /// <summary>
     /// A connection point on a node for either an outgoing or an incomming connection 
     /// </summary>
-    public class NodeSocket : IGraphElement, ISelectable
+    public class NodeSocket : ISelectable
     {
         public string Title { get => _type.ToString(); set => Title = value; }
         public SocketType Type => _type;
@@ -52,31 +52,6 @@ namespace ezutils.Editor
 
         // TODO: add functionality to change position of socket in implementing graph editor
 
-        public void DrawElement()
-        {
-            _rect.y = _node.Rect.y + (_node.Rect.height * 0.5f) - _rect.height * 0.5f;
-
-            switch (_type)
-            {
-                //TODO: remove magic numbers
-                case SocketType.IN:
-                    _rect.x = _node.Rect.center.x - _node.Rect.width * 0.5f;// + (EditorGUIUtility.singleLineHeight * 0.5f);
-                    break;
-                case SocketType.OUT:
-                    _rect.x = (_node.Rect.x + _node.Rect.width) - Rect.width;
-                    break;
-                default:
-                    break;
-            }
-
-            //GUILayout.Box("", IsConnected ? _connectedStyle : _style);
-            //var clicked = GUI.Button(_rect, "", IsConnected ? _connectedStyle : _style);
-
-            //if (clicked && _onClicked != null)
-            //{
-            //    _onClicked(this);
-            //}
-        }
 
         public void Connect()
         {
