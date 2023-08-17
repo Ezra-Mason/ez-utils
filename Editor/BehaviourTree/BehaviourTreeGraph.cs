@@ -37,6 +37,8 @@ namespace ezutils.Editor
         protected override void OnEnable()
         {
             base.OnEnable();
+            AssetDatabase.Refresh();
+
             if (_nodeMap == null)
             {
                 _nodeMap = new Dictionary<GraphNode, Node>();
@@ -228,7 +230,8 @@ namespace ezutils.Editor
 
         public void OnDisable()
         {
-            _treeAsset.Save();
+            AssetDatabase.SaveAssets();
+            //_treeAsset.Save();
         }
     }
 }

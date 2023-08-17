@@ -21,8 +21,16 @@ namespace ezutils.Runtime.BehaviourTree
     // - tracking nodes in a behaviour from the asset view
     public abstract class Node : ScriptableObject
     {
-        public Vector2 GraphPosition { get => _graphPosition; set => _graphPosition = value; }
-
+#if UNITY_EDITOR
+        public Vector2 GraphPosition
+        {
+            get => _graphPosition; set
+            {
+                EditorUtility.SetDirty(this);
+                _graphPosition = value;
+            }
+        }
+#endif
         [SerializeField] protected Vector2 _graphPosition = new Vector2();
 
         public string NodeName { get; set; }
@@ -54,8 +62,9 @@ namespace ezutils.Runtime.BehaviourTree
 #if UNITY_EDITOR
         public void Save()
         {
-            AssetDatabase.Refresh();
-            EditorUtility.SetDirty(this);
+            /*            AssetDatabase.Refresh();
+                        EditorUtility.SetDirty(this);
+            */
             AssetDatabase.SaveAssets();
         }
 
