@@ -15,8 +15,32 @@ namespace ezutils.Scenes
     public class SceneReference : ISerializationCallbackReceiver
     {
         [SerializeField] private Object _sceneAsset;
+        public string Name => System.IO.Path.GetFileNameWithoutExtension(Path);
+        public string Path
+        {
+            get
+            {
+#if UNITY_EDITOR
+                return ScenePathFromAsset;
+#else
+                return _scenePath
+#endif
+            }
+        }
         [SerializeField] private string _scenePath = string.Empty;
+        public int BuildIndex
+        {
+            get
+            {
+#if UNITY_EDITOR
+                return BuildIndexFromAsset;
+#else
+                return _buildIndex
+#endif
+            }
+        }
         [SerializeField] private int _buildIndex = -1;
+
 #if UNITY_EDITOR
         private bool IsValidSceneAsset => _sceneAsset != null && _sceneAsset is SceneAsset;
         private SceneAsset SceneAssetFromPath => string.IsNullOrEmpty(_scenePath) ? null : AssetDatabase.LoadAssetAtPath<SceneAsset>(_scenePath);
