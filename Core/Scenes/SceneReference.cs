@@ -6,7 +6,7 @@ using UnityEditor.SceneManagement;
 using UnityEditor;
 #endif
 
-namespace ezutils
+namespace ezutils.Scenes
 {
     /// <summary>
     /// Wrapper for a runtime-safe serialization for <see cref="SceneAsset"/>
@@ -79,16 +79,16 @@ namespace ezutils
 #if UNITY_EDITOR
         private void HandleAfterSerialization()
         {
-            
+
             EditorApplication.update -= HandleAfterSerialization;
-            
+
             if (IsValidSceneAsset) return;
             if (string.IsNullOrEmpty(_scenePath)) return;
 
             //the asset isnt valid but we can use the path to recover from
             _sceneAsset = SceneAssetFromPath;
             _buildIndex = BuildIndexFromAsset;
-            
+
             //if the path was also invalid so we should discard it
             if (!_sceneAsset)
             {
@@ -102,4 +102,39 @@ namespace ezutils
         }
 #endif
     }
+
+
+#if UNITY_EDITOR
+    [CustomPropertyDrawer(typeof(SceneReference))]
+    public class SceneReferencePropertyDrawer : PropertyDrawer
+    {
+        private const string SCENE_ASSET_FIELD = "_sceneAsset";
+        private const string SCENE_PATH_FIELD = "_scenePath";
+
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            if (property.serializedObject.isEditingMultipleObjects)
+            {
+                GUI.Label(position, "SceneReference does not support editing multiple objects");
+                return;
+            }
+
+            SerializedProperty assetProperty = property.FindPropertyRelative(SCENE_ASSET_FIELD);
+
+            Rect scenePos = new Rect(position);
+
+            scenePos.height = position.height - EditorGUIUtility.standardVerticalSpacing * 2f;
+            scenePos.y += EditorGUIUtility.standardVerticalSpacing;
+            label = EditorGUI.BeginProperty(position, label, property);
+
+            //we only need to render the object field, the scene path and build index can be hidden from the user
+            assetProperty.objectReferenceValue = EditorGUI.ObjectField(scenePos, label, assetProperty.objectReferenceValue, typeof(SceneAsset), false);
+        }
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            return EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing * 2f;
+        }
+    }
+#endif
+
 }
