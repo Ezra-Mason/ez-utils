@@ -7,6 +7,7 @@ Utilities for Unity game development.
 - ScriptableObject Events (ScriptableObject event objects and listener class)
 - Repositories (ScriptableObject for storing, sharing and updating objects)
 - Springs (Simple Harmonic Motion methods and classes for 1,2 and 3D springs)
+- Scene References (A runtime safe way to reference a SceneAsset) 
   
 ## Runtime
 - Finite State Machine (Adaptable FSM system with customisable states)
